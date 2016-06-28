@@ -45,6 +45,12 @@ build-type:           Simple
 description:          Mustache templates for Haskell.
 extra-source-files:   CHANGELOG.md
                     , README.md
+                    , specs/comments.yml
+                    , specs/delimiters.yml
+                    , specs/interpolation.yml
+                    , specs/inverted.yml
+                    , specs/partials.yml
+                    , specs/sections.yml
 
 source-repository head
   type:               git
@@ -95,6 +101,25 @@ test-suite tests
                     , Text.Mustache.ParserSpec
   if !impl(ghc >= 8.0)
     build-depends:    semigroups     == 0.18.*
+  if flag(dev)
+    ghc-options:      -Wall -Werror
+  else
+    ghc-options:      -O2 -Wall
+  default-language:   Haskell2010
+
+test-suite mustache-spec
+  main-is:            Spec.hs
+  hs-source-dirs:     mustache-spec
+  type:               exitcode-stdio-1.0
+  build-depends:      aeson            >= 0.11 && < 0.12
+                    , base             >= 4.7  && < 5.0
+                    , bytestring       >= 0.10 && < 0.11
+                    , file-embed
+                    , hspec            >= 2.0  && < 3.0
+                    , megaparsec       >= 5.0  && < 6.0
+                    , stache           >= 0.1.0
+                    , text             >= 1.2  && < 1.3
+                    , yaml             >= 0.8  && < 0.9
   if flag(dev)
     ghc-options:      -Wall -Werror
   else
