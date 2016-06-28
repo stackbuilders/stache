@@ -35,12 +35,13 @@ script:
  - cabal sdist
  - cabal haddock | grep "100%" | wc -l | grep "5"
 
-# after_script:
-#  - cabal install hpc-coveralls
-#  - export PATH=~/.cabal/bin:$PATH
-#  - hpc-coveralls --coverage-mode=StrictlyFullLines
-#                  --exclude-dir=tests
-#                  tests
+after_script:
+ - cabal install hpc-coveralls
+ - export PATH=~/.cabal/bin:$PATH
+ - hpc-coveralls --coverage-mode=StrictlyFullLines
+                 --exclude-dir=tests
+                 --exclude-dir=mustache-spec
+                 tests mustache-spec
 
 notifications:
   email: false
