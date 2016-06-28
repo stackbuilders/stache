@@ -94,8 +94,9 @@ lookupValue _       _          = Null
 -- | Render Aeson's 'Value' /without/ HTML escaping.
 
 renderValue :: Value -> Text
-renderValue Null  = ""
-renderValue value = (T.decodeUtf8 . B.toStrict . encode) value
+renderValue Null         = ""
+renderValue (String str) = str
+renderValue value        = (T.decodeUtf8 . B.toStrict . encode) value
 {-# INLINE renderValue #-}
 
 -- | Escape HTML represented as strict 'Text'.
