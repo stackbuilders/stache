@@ -80,7 +80,7 @@ isBlank Null         = True
 isBlank (Bool False) = True
 isBlank (Object   m) = H.null m
 isBlank (Array    a) = V.null a
-isBlank _            = True
+isBlank _            = False
 {-# INLINE isBlank #-}
 
 -- | Lookup value in Aeson's 'Value' and return it if it's found. If the
@@ -103,8 +103,8 @@ renderValue value        = (T.decodeUtf8 . B.toStrict . encode) value
 
 escapeHtml :: Text -> Text
 escapeHtml txt = foldr (uncurry T.replace) txt
-  [ ("&",  "&amp;")
-  , ("\"", "&qout;")
+  [ ("\"", "&quot;")
   , ("<",  "&lt;")
-  , (">",  "&gt;") ]
+  , (">",  "&gt;")
+  , ("&",  "&amp;") ]
 {-# INLINE escapeHtml #-}

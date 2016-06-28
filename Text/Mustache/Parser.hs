@@ -126,12 +126,12 @@ pClosingTag key = do
 {-# INLINE pClosingTag #-}
 
 pKey :: Parser Key
-pKey = Key . T.pack <$> lexeme (some ch <?> "a key")
+pKey = Key . T.pack <$> lexeme (some ch <?> "key")
   where ch = alphaNumChar <|> oneOf "-_"
 {-# INLINE pKey #-}
 
 pDelimiter :: Parser String
-pDelimiter = some (satisfy delChar) <?> "a delimiter"
+pDelimiter = some (satisfy delChar) <?> "delimiter"
   where delChar x = not (isSpace x) && x /= '='
 {-# INLINE pDelimiter #-}
 
