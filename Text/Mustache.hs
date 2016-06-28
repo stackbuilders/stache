@@ -20,16 +20,9 @@ module Text.Mustache
   , compileMustacheFile
   , compileMustacheText
     -- * Rendering
-  , renderMustache
-    -- * Re-exports from Aeson
-  , object
-  , (.=) )
+  , renderMustache )
 where
 
-import Data.Aeson (object, (.=))
 import Text.Mustache.Compile
 import Text.Mustache.Render
 import Text.Mustache.Type
-
--- :set -XOverloadedStrings
--- compileMustacheDir "/home/mark/Downloads/my-staches/" (Key "foo")

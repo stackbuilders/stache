@@ -9,6 +9,7 @@
 --
 -- Functions for rendering Mustache templates.
 
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RecordWildCards   #-}
 
@@ -28,6 +29,10 @@ import qualified Data.Map             as M
 import qualified Data.Text            as T
 import qualified Data.Text.Encoding   as T
 import qualified Data.Vector          as V
+
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative ((<$>))
+#endif
 
 -- | Render a Mustache 'Template' using Aeson's 'Value' to get actual values
 -- for interpolation.

@@ -9,6 +9,8 @@
 --
 -- Mustache 'Template' creation from file or a 'Text' value.
 
+{-# LANGUAGE CPP #-}
+
 module Text.Mustache.Compile
   ( compileMustacheDir
   , compileMustacheFile
@@ -27,6 +29,10 @@ import qualified Data.Text       as T
 import qualified Data.Text.IO    as T
 import qualified System.FilePath as F
 
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative ((<$>))
+#endif
+
 -- | Compile all templates in specified directory and select one. Template
 -- files should have extension @mustache@, (e.g. @foo.mustache@) to be
 -- recognized.
@@ -40,8 +46,8 @@ compileMustacheDir :: (MonadIO m, MonadThrow m)
   -> m Template        -- ^ The resulting template
 compileMustacheDir path key =
   liftIO (getDirectoryContents path) >>=
-  filterM isMustacheFile . fmap (F.combine (F.takeDirectory path)) >>=
-  fmap selectKey . foldM f (Template undefined M.empty)
+  filterM isMustacheFile . liftM (F.combine (F.takeDirectory path)) >>=
+  liftM selectKey . foldM f (Template undefined M.empty)
   where
     selectKey t = t { templateActual = key }
     f (Template _ old) fp = do
