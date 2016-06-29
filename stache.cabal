@@ -114,6 +114,7 @@ test-suite mustache-spec
   build-depends:      aeson            >= 0.11 && < 0.12
                     , base             >= 4.7  && < 5.0
                     , bytestring       >= 0.10 && < 0.11
+                    , containers       >= 0.5  && < 0.6
                     , file-embed
                     , hspec            >= 2.0  && < 3.0
                     , megaparsec       >= 5.0  && < 6.0

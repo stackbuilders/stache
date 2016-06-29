@@ -11,12 +11,15 @@
 -- because "Text.Mustache" re-exports everything you may need, import that
 -- module instead.
 
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Text.Mustache.Type
   ( Template (..)
   , Node (..)
   , Key (..)
+  , PName (..)
   , MustacheException (..) )
 where
 
@@ -27,27 +30,43 @@ import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Text.Megaparsec
 
+#if !MIN_VERSION_base(4,8,0)
+import Data.Monoid (Monoid)
+#endif
+
 -- | Mustache template with metadata.
 
 data Template = Template
-  { templateActual :: Key
-  , templateCache  :: Map Key [Node]
+  { templateActual :: PName
+  , templateCache  :: Map PName [Node]
   } deriving (Eq, Ord, Show, Data, Typeable)
 
 -- | Structural element of template.
 
 data Node
-  = TextBlock       Text -- ^ Plain text contained between tags
-  | EscapedVar      Key
-  | UnescapedVar    Key
-  | Section         Key [Node]
-  | InvertedSection Key [Node]
-  | Partial         Key Pos
+  = TextBlock       Text       -- ^ Plain text contained between tags
+  | EscapedVar      Key        -- ^ HTML-escaped variable
+  | UnescapedVar    Key        -- ^ Unescaped variable
+  | Section         Key [Node] -- ^ Mustache section
+  | InvertedSection Key [Node] -- ^ Inverted section
+  | Partial         PName (Maybe Pos)
+    -- ^ Partial with indentation level ('Nothing' means it was inlined)
   deriving (Eq, Ord, Show, Data, Typeable)
 
 -- | Identifier for values to interpolate.
+--
+-- The representation is the following:
+--
+--     * @[]@ — empty list means implicit iterators;
+--     * @[text]@ — single key is a normal identifier;
+--     * @[text1, text2]@ — multiple keys represent dotted names.
 
-newtype Key = Key { unKey :: Text }
+newtype Key = Key { unKey :: [Text] }
+  deriving (Eq, Ord, Show, Monoid, Data, Typeable)
+
+-- | Identifier for partials.
+
+newtype PName = PName { unPName :: Text }
   deriving (Eq, Ord, Show, Data, Typeable)
 
 -- | Exception that is thrown when parsing of a template has failed.

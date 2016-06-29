@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.RenderSpec
@@ -13,26 +14,31 @@ import Text.Mustache.Render
 import Text.Mustache.Type
 import qualified Data.Map as M
 
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative (pure)
+#endif
+
 main :: IO ()
 main = hspec spec
 
 spec :: Spec
 spec = describe "renderMustache" $ do
   let r ns value =
-        let template = Template (Key "test") (M.singleton (Key "test") ns)
+        let template = Template (PName "test") (M.singleton (PName "test") ns)
         in renderMustache template value
+      key = Key . pure
   it "leaves text block “as is”" $
     r [TextBlock "a text block"] Null `shouldBe` "a text block"
   it "renders escaped variables correctly" $
-    r [EscapedVar (Key "foo")]
+    r [EscapedVar (key "foo")]
       (object ["foo" .= ("<html>&\"something\"</html>" :: Text)])
       `shouldBe` "&lt;html&gt;&amp;&quot;something&quot;&lt;/html&gt;"
   it "renders unescaped variables “as is”" $
-    r [UnescapedVar (Key "foo")]
+    r [UnescapedVar (key "foo")]
       (object ["foo" .= ("<html>&\"something\"</html>" :: Text)])
       `shouldBe` "<html>&\"something\"</html>"
   context "when rendering a section" $ do
-    let nodes = [Section (Key "foo") [UnescapedVar (Key "bar"), TextBlock "*"]]
+    let nodes = [Section (key "foo") [UnescapedVar (key "bar"), TextBlock "*"]]
     context "when the key is not present" $
       it "renders nothing" $
         r nodes (object []) `shouldBe` ""
@@ -48,7 +54,7 @@ spec = describe "renderMustache" $ do
           r nodes (object ["foo" .= object []]) `shouldBe` ""
       context "when the key is a Boolean true" $
         it "renders the section without interpolation" $
-          r [Section (Key "foo") [TextBlock "brr"]]
+          r [Section (key "foo") [TextBlock "brr"]]
             (object ["foo" .= object ["bar" .= True]])
             `shouldBe` "brr"
       context "when the key is an object" $
@@ -61,7 +67,7 @@ spec = describe "renderMustache" $ do
             `shouldBe` "huh!*"
       context "when the key is a list of Boolean trues" $
         it "renders the section as many times as there are elements" $
-          r [Section (Key "foo") [TextBlock "brr"]]
+          r [Section (key "foo") [TextBlock "brr"]]
             (object ["foo" .= [True, True]])
             `shouldBe` "brrbrr"
       context "wehn the key is a list of objects" $
@@ -69,7 +75,7 @@ spec = describe "renderMustache" $ do
           r nodes (object ["foo" .= [object ["bar" .= x] | x <- [1..4] :: [Int]]])
             `shouldBe` "1*2*3*4*"
   context "when rendering an inverted section" $ do
-    let nodes = [InvertedSection (Key "foo") [TextBlock "Here!"]]
+    let nodes = [InvertedSection (key "foo") [TextBlock "Here!"]]
     context "when the key is not present" $
       it "renders the inverse section" $
         r nodes (object []) `shouldBe` "Here!"
@@ -91,14 +97,13 @@ spec = describe "renderMustache" $ do
         it "skips non-empty list" $
           r nodes (object ["foo" .= [True]]) `shouldBe` ""
   context "when rendering a partial" $ do
-    let nodes = [ TextBlock "   "
-                , Partial (Key "partial") (unsafePos 4)
+    let nodes = [ Partial (PName "partial") (Just $ unsafePos 4)
                 , TextBlock "*" ]
     it "skips missing partial" $
       r nodes Null `shouldBe` "   *"
     it "renders partial correctly" $
-      let template = Template (Key "test") $
-            M.fromList [ (Key "test", nodes)
-                       , (Key "partial", [TextBlock "one\ntwo\nthree"]) ]
+      let template = Template (PName "test") $
+            M.fromList [ (PName "test", nodes)
+                       , (PName "partial", [TextBlock "one\ntwo\nthree"]) ]
       in renderMustache template Null `shouldBe`
            "   one\n   two\n   three*"

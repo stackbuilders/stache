@@ -19,6 +19,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.State.Lazy
 import Data.Char (isSpace)
+import Data.List (intercalate)
 import Data.Maybe (catMaybes)
 import Data.Text (Text)
 import Text.Megaparsec
@@ -38,28 +39,35 @@ parseMustache
      -- ^ File contents (Mustache template)
   -> Either (ParseError Char Dec) [Node]
      -- ^ Parsed nodes or parse error
-parseMustache = parse (evalStateT (pMustache <* eof) (Delimiters "{{" "}}"))
+parseMustache = parse $
+  evalStateT (pMustache eof) (Delimiters "{{" "}}")
 
-pMustache :: Parser [Node]
-pMustache = catMaybes <$> many (choice alts)
+pMustache :: Parser () -> Parser [Node]
+pMustache = fmap catMaybes . manyTill (choice alts)
   where
     alts =
-      [ Just <$> pTextBlock
-      , Just <$> pUnescapedVariable
-      , Just <$> pUnescapedSpecial
-      , Just <$> pSection "#" Section
-      , Just <$> pSection "^" InvertedSection
-      , Just <$> pPartial
-      , Nothing <$ pComment
-      , Nothing <$ pSetDelimiters
-      , Just <$> pEscapedVariable ]
+      [ Nothing <$  withStandalone pComment
+      , Just    <$> pSection "#" Section
+      , Just    <$> pSection "^" InvertedSection
+      , Just    <$> pStandalone (pPartial Just)
+      , Just    <$> pPartial (const Nothing)
+      , Nothing <$  withStandalone pSetDelimiters
+      , Just    <$> pUnescapedVariable
+      , Just    <$> pUnescapedSpecial
+      , Just    <$> pEscapedVariable
+      , Just    <$> pTextBlock ]
+{-# INLINE pMustache #-}
 
 pTextBlock :: Parser Node
 pTextBlock = do
   start <- gets openingDel
   (void . notFollowedBy . string) start
-  TextBlock . T.pack <$>
-    someTill anyChar ((void . lookAhead . string) start <|> eof)
+  let terminator = choice
+        [ (void . lookAhead . string) start
+        , pBol
+        , eof ]
+  TextBlock . T.pack <$> someTill anyChar terminator
+{-# INLINE pTextBlock #-}
 
 pUnescapedVariable :: Parser Node
 pUnescapedVariable = UnescapedVar <$> pTag "&"
@@ -72,17 +80,17 @@ pUnescapedSpecial =
 
 pSection :: String -> (Key -> [Node] -> Node) -> Parser Node
 pSection suffix f = do
-  key   <- pTag suffix
-  nodes <- pMustache
-  pClosingTag key
+  key   <- withStandalone (pTag suffix)
+  nodes <- (pMustache . withStandalone . pClosingTag) key
   return (f key nodes)
 {-# INLINE pSection #-}
 
-pPartial :: Parser Node
-pPartial = do
-  pos <- L.indentLevel
+pPartial :: (Pos -> Maybe Pos) -> Parser Node
+pPartial f = do
+  pos <- f <$> L.indentLevel
   key <- pTag ">"
-  return (Partial key pos)
+  let pname = PName $ T.intercalate (T.pack ".") (unKey key)
+  return (Partial pname pos)
 {-# INLINE pPartial #-}
 
 pComment :: Parser ()
@@ -97,10 +105,9 @@ pSetDelimiters :: Parser ()
 pSetDelimiters = void $ do
   start <- gets openingDel
   end   <- gets closingDel
-  (void . string) (start ++ "=")
-  start' <- pDelimiter
-  sc
-  end'   <- pDelimiter
+  (void . symbol) (start ++ "=")
+  start' <- pDelimiter <* scn
+  end'   <- pDelimiter <* scn
   (void . string) ("=" ++ end)
   put (Delimiters start' end')
 {-# INLINE pSetDelimiters #-}
@@ -109,11 +116,18 @@ pEscapedVariable :: Parser Node
 pEscapedVariable = EscapedVar <$> pTag ""
 {-# INLINE pEscapedVariable #-}
 
+withStandalone :: Parser a -> Parser a
+withStandalone p = pStandalone p <|> p
+{-# INLINE withStandalone #-}
+
+pStandalone :: Parser a -> Parser a
+pStandalone p = pBol *> try (between sc (sc <* (void eol <|> eof)) p)
+{-# INLINE pStandalone #-}
+
 pTag :: String -> Parser Key
 pTag suffix = do
   start <- gets openingDel
   end   <- gets closingDel
-  notFollowedBy (string $ start ++ "/")
   between (symbol $ start ++ suffix) (string end) pKey
 {-# INLINE pTag #-}
 
@@ -121,19 +135,28 @@ pClosingTag :: Key -> Parser ()
 pClosingTag key = do
   start <- gets openingDel
   end   <- gets closingDel
-  let str = T.unpack (unKey key)
+  let str = keyToString key
   void $ between (symbol $ start ++ "/") (string end) (symbol str)
 {-# INLINE pClosingTag #-}
 
 pKey :: Parser Key
-pKey = Key . T.pack <$> lexeme (some ch <?> "key")
-  where ch = alphaNumChar <|> oneOf "-_"
+pKey = (fmap Key . lexeme . label "key") (implicit <|> other)
+  where
+    implicit = [] <$ char '.'
+    other    = sepBy1 (T.pack <$> some ch) (char '.')
+    ch       = alphaNumChar <|> oneOf "-_"
 {-# INLINE pKey #-}
 
 pDelimiter :: Parser String
 pDelimiter = some (satisfy delChar) <?> "delimiter"
   where delChar x = not (isSpace x) && x /= '='
 {-# INLINE pDelimiter #-}
+
+pBol :: Parser ()
+pBol = do
+  level <- L.indentLevel
+  unless (level == unsafePos 1) empty
+{-# INLINE pBol #-}
 
 ----------------------------------------------------------------------------
 -- Auxiliary types
@@ -150,13 +173,25 @@ data Delimiters = Delimiters
   , closingDel :: String }
 
 ----------------------------------------------------------------------------
--- Lexer helpers
+-- Lexer helpers and other
+
+scn :: Parser ()
+scn = L.space (void spaceChar) empty empty
+{-# INLINE scn #-}
 
 sc :: Parser ()
-sc = L.space (void spaceChar) empty empty
+sc = L.space (void $ oneOf " \t") empty empty
+{-# INLINE sc #-}
 
 lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
+lexeme = L.lexeme scn
+{-# INLINE lexeme #-}
 
 symbol :: String -> Parser String
-symbol = L.symbol sc
+symbol = L.symbol scn
+{-# INLINE symbol #-}
+
+keyToString :: Key -> String
+keyToString (Key []) = "."
+keyToString (Key ks) = intercalate "." (T.unpack <$> ks)
+{-# INLINE keyToString #-}

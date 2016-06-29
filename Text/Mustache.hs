@@ -14,6 +14,7 @@ module Text.Mustache
     Template (..)
   , Node (..)
   , Key (..)
+  , PName (..)
   , MustacheException (..)
     -- * Compiling
   , compileMustacheDir

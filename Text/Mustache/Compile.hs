@@ -42,14 +42,14 @@ import Control.Applicative ((<$>))
 
 compileMustacheDir :: (MonadIO m, MonadThrow m)
   => FilePath          -- ^ Directory with templates
-  -> Key               -- ^ Which template to select
+  -> PName             -- ^ Which template to select
   -> m Template        -- ^ The resulting template
-compileMustacheDir path key =
+compileMustacheDir path pname =
   liftIO (getDirectoryContents path) >>=
   filterM isMustacheFile . liftM (F.combine (F.takeDirectory path)) >>=
   liftM selectKey . foldM f (Template undefined M.empty)
   where
-    selectKey t = t { templateActual = key }
+    selectKey t = t { templateActual = pname }
     f (Template _ old) fp = do
       Template _ new <- compileMustacheFile fp
       return (Template undefined (M.union new old))
@@ -62,17 +62,17 @@ compileMustacheFile :: (MonadIO m, MonadThrow m)
   => FilePath          -- ^ Location of the file
   -> m Template
 compileMustacheFile path = liftIO (T.readFile path) >>=
-  withException . compileMustacheText (pathToKey path)
+  withException . compileMustacheText (pathToPName path)
 
 -- | Compile Mustache template from 'Text' value. The cache will contain
 -- only this template named according to given 'Key'.
 
 compileMustacheText
-  :: Key               -- ^ How to name the template?
+  :: PName             -- ^ How to name the template?
   -> Text              -- ^ The template to compile
   -> Either (ParseError Char Dec) Template -- ^ The result
-compileMustacheText key txt =
-  Template key . M.singleton key <$> parseMustache "" txt
+compileMustacheText pname txt =
+  Template pname . M.singleton pname <$> parseMustache "" txt
 
 ----------------------------------------------------------------------------
 -- Helpers
@@ -89,9 +89,9 @@ isMustacheFile path = do
 
 -- | Build a 'Key' from given 'FilePath'.
 
-pathToKey :: FilePath -> Key
-pathToKey = Key . T.pack . F.takeBaseName
-{-# INLINE pathToKey #-}
+pathToPName :: FilePath -> PName
+pathToPName = PName . T.pack . F.takeBaseName
+{-# INLINE pathToPName #-}
 
 -- | Throw 'MustacheException' if argument is 'Left' or return the result
 -- inside 'Right'.

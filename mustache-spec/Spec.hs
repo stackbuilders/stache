@@ -9,11 +9,14 @@ import Control.Monad
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.FileEmbed (embedFile)
+import Data.Map (Map, (!))
 import Data.Text (Text)
 import Data.Yaml
 import Test.Hspec
 import Text.Megaparsec
 import Text.Mustache
+import Text.Mustache.Parser
+import qualified Data.Map  as M
 import qualified Data.Text as T
 
 -- | Representation of information contained in a Mustache spec file.
@@ -37,6 +40,7 @@ data Test = Test
   , testData     :: Value
   , testTemplate :: Text
   , testExpected :: Text
+  , testPartials :: Map Text Text
   }
 
 instance FromJSON Test where
@@ -46,6 +50,7 @@ instance FromJSON Test where
     testData     <- o .: "data"
     testTemplate <- o .: "template"
     testExpected <- o .: "expected"
+    testPartials <- o .:? "partials" .!= M.empty
     return Test {..}
 
 main :: IO ()
@@ -62,6 +67,7 @@ spec = do
 
 specData :: String -> ByteString -> Spec
 specData aspect bytes = describe aspect $ do
+  let handleError = expectationFailure . parseErrorPretty
   case decodeEither' bytes of
     Left err ->
       it "should load YAML specs first" $
@@ -69,8 +75,14 @@ specData aspect bytes = describe aspect $ do
     Right SpecFile {..} ->
       forM_ specTests $ \Test {..} ->
         it (testName ++ ": " ++ testDesc) $
-          case compileMustacheText (Key $ T.pack testName) testTemplate of
-            Left perr ->
-              expectationFailure (parseErrorPretty perr)
-            Right template ->
-              renderMustache template testData `shouldBe` testExpected
+          case compileMustacheText (PName $ T.pack testName) testTemplate of
+            Left perr -> handleError perr
+            Right Template {..} -> do
+              ps1 <- forM (M.keys testPartials) $ \k -> do
+                let pname = PName k
+                case parseMustache (T.unpack k) (testPartials ! k) of
+                  Left perr -> handleError perr >> undefined
+                  Right ns  -> return (pname, ns)
+              let ps2 = M.fromList ps1 `M.union` templateCache
+              renderMustache (Template templateActual ps2) testData
+                `shouldBe` testExpected
