@@ -7,9 +7,9 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- Megaparsec parser for Mustache templates.
-
-{-# LANGUAGE DeriveDataTypeable #-}
+-- Megaparsec parser for Mustache templates. You don't usually need to
+-- import the module, because "Text.Mustache" re-exports everything you may
+-- need, import that module instead.
 
 module Text.Mustache.Parser
   ( parseMustache )

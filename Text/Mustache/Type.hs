@@ -34,11 +34,16 @@ import Text.Megaparsec
 import Data.Monoid (Monoid)
 #endif
 
--- | Mustache template with metadata.
+-- | Mustache template as name of “top-level” template and a collection of
+-- all available templates (partials).
 
 data Template = Template
   { templateActual :: PName
+    -- ^ Name of currently “selected” template (top-level one).
   , templateCache  :: Map PName [Node]
+    -- ^ Collection of all templates that are available for interpolation
+    -- (as partials). The top-level one is also contained here and the
+    -- “focus” can be switched easily by modifying 'templateActual'.
   } deriving (Eq, Ord, Show, Data, Typeable)
 
 -- | Structural element of template.

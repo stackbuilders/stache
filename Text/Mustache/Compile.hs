@@ -7,7 +7,9 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- Mustache 'Template' creation from file or a 'Text' value.
+-- Mustache 'Template' creation from file or a 'Text' value. You don't
+-- usually need to import the module, because "Text.Mustache" re-exports
+-- everything you may need, import that module instead.
 
 {-# LANGUAGE CPP #-}
 
@@ -42,7 +44,7 @@ import Control.Applicative ((<$>))
 
 compileMustacheDir :: (MonadIO m, MonadThrow m)
   => FilePath          -- ^ Directory with templates
-  -> PName             -- ^ Which template to select
+  -> PName             -- ^ Which template to select after compiling
   -> m Template        -- ^ The resulting template
 compileMustacheDir path pname =
   liftIO (getDirectoryContents path) >>=
@@ -64,8 +66,8 @@ compileMustacheFile :: (MonadIO m, MonadThrow m)
 compileMustacheFile path = liftIO (TL.readFile path) >>=
   withException . compileMustacheText (pathToPName path)
 
--- | Compile Mustache template from 'Text' value. The cache will contain
--- only this template named according to given 'Key'.
+-- | Compile Mustache template from a lazy 'Text' value. The cache will
+-- contain only this template named according to given 'PName'.
 
 compileMustacheText
   :: PName             -- ^ How to name the template?

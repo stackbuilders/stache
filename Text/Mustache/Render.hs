@@ -7,7 +7,9 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- Functions for rendering Mustache templates.
+-- Functions for rendering Mustache templates. You don't usually need to
+-- import the module, because "Text.Mustache" re-exports everything you may
+-- need, import that module instead.
 
 {-# LANGUAGE CPP                        #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
