@@ -9,76 +9,235 @@
 --
 -- Functions for rendering Mustache templates.
 
-{-# LANGUAGE CPP               #-}
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RecordWildCards   #-}
+{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE RecordWildCards            #-}
 
 module Text.Mustache.Render
   ( renderMustache )
 where
 
+import Control.Monad.Reader
+import Control.Monad.Writer.Lazy
 import Data.Aeson
 import Data.Foldable (asum)
 import Data.List (tails)
+import Data.List.NonEmpty (NonEmpty (..))
 import Data.Maybe (fromMaybe)
-import Data.Monoid ((<>))
 import Data.Text (Text)
 import Text.Megaparsec.Pos (Pos, unPos)
 import Text.Mustache.Type
-import qualified Data.ByteString.Lazy as B
-import qualified Data.HashMap.Strict  as H
-import qualified Data.Map             as M
-import qualified Data.Text            as T
-import qualified Data.Text.Encoding   as T
-import qualified Data.Vector          as V
+import qualified Data.ByteString.Lazy   as B
+import qualified Data.HashMap.Strict    as H
+import qualified Data.List.NonEmpty     as NE
+import qualified Data.Map               as M
+import qualified Data.Semigroup         as S
+import qualified Data.Text              as T
+import qualified Data.Text.Encoding     as T
+import qualified Data.Text.Lazy         as TL
+import qualified Data.Text.Lazy.Builder as B
+import qualified Data.Vector            as V
 
 #if !MIN_VERSION_base(4,8,0)
-import Control.Applicative ((<$>))
-import Data.Monoid (mempty)
+import Control.Applicative
 #endif
+
+----------------------------------------------------------------------------
+-- The rendering monad
+
+-- | Synonym for the monad we use for rendering. It allows to share context
+-- and accumulate the result as 'B.Builder' data which is then turned into
+-- lazy 'TL.Text'.
+
+type Render a = ReaderT RenderContext (Writer B.Builder) a
+
+-- | The render monad context.
+
+data RenderContext = RenderContext
+  { rcIndent   :: Maybe Pos      -- ^ Actual indentation level
+  , rcContext  :: NonEmpty Value -- ^ The context stack
+  , rcPrefix   :: Key            -- ^ Prefix accumulated by entering sections
+  , rcTemplate :: Template       -- ^ The template to render
+  , rcLastNode :: Bool           -- ^ Is this last node in this partial?
+  }
+
+----------------------------------------------------------------------------
+-- High-level interface
 
 -- | Render a Mustache 'Template' using Aeson's 'Value' to get actual values
 -- for interpolation.
 
-renderMustache :: Template -> Value -> Text
-renderMustache Template {..} =
-  renderNodes mempty (M.findWithDefault [] templateActual templateCache)
-  where
-    renderNodes p ns v = T.concat (r p v <$> ns)
-    r _ _ (TextBlock    t) = t
-    r p v (EscapedVar   k) = escapeHtml (g p k v)
-    r p v (UnescapedVar k) = g p k v
-    r p v (Section   k ns) =
-      let l  = lookupValue p k v
-          p' = p <> k
-      in if isBlank l
-           then ""
-           else T.concat $
-             case l of
-               Object _  -> [renderNodes p' ns v]
-               Array xs  -> renderNodes p ns <$> V.toList xs -- FIXME
-               Bool True -> [renderNodes p' ns v]
-               String _  -> [renderNodes p' ns v]
-               _         -> []
-    r p v (InvertedSection k ns) =
-      let l = lookupValue p k v
-      in if isBlank l
-           then renderNodes p ns l
-           else ""
-    r _ v (Partial name pos) =
-      fixupIndentation pos (renderMustache (Template name templateCache) v)
-    g p k v = renderValue (lookupValue p k v)
+renderMustache :: Template -> Value -> TL.Text
+renderMustache t =
+  runRender (renderPartial (templateActual t) Nothing renderNode) t
 
--- | Add indentation (the size is passed in as 'Pos' value) to every line of
--- given text except for the first one.
+-- | Render a single 'Node'.
 
-fixupIndentation :: Maybe Pos -> Text -> Text
-fixupIndentation Nothing    txt = txt
-fixupIndentation (Just pos) txt = indent <> T.replace "\n" ("\n" <> indent) txt
+renderNode :: Node -> Render ()
+renderNode (TextBlock txt) = outputIndented txt
+renderNode (EscapedVar k) =
+  lookupKey k >>= outputRaw . escapeHtml . renderValue
+renderNode (UnescapedVar k) =
+  lookupKey k >>= outputRaw . renderValue
+renderNode (Section k ns) = do
+  val <- lookupKey k
+  enterSection k $
+    unless (isBlank val) $
+      case val of
+        Object _ ->
+          addToLocalContext val (renderMany renderNode ns)
+        Array xs ->
+          forM_ (V.toList xs) $ \x ->
+            addToLocalContext x (renderMany renderNode ns)
+        Bool True ->
+          renderMany renderNode ns
+        String _  ->
+          renderMany renderNode ns
+        _ ->
+          return ()
+renderNode (InvertedSection k ns) = do
+  val <- lookupKey k
+  when (isBlank val) $
+    renderMany renderNode ns
+renderNode (Partial pname indent) =
+  renderPartial pname indent renderNode
+
+----------------------------------------------------------------------------
+-- The rendering monad vocabulary
+
+-- | Run 'Render' monad given template to render and a 'Value' to take
+-- values from.
+
+runRender :: Render a -> Template -> Value -> TL.Text
+runRender m t v = (B.toLazyText . execWriter) (runReaderT m rc)
   where
-    indent = T.replicate (n - 1) " "
-    n = fromIntegral (unPos pos)
-{-# INLINE fixupIndentation #-}
+    rc = RenderContext
+      { rcIndent   = Nothing
+      , rcContext  = v :| []
+      , rcPrefix   = mempty
+      , rcTemplate = t
+      , rcLastNode = True }
+{-# INLINE runRender #-}
+
+-- | Output a piece of strict 'Text'.
+
+outputRaw :: Text -> Render ()
+outputRaw = tell . B.fromText
+{-# INLINE outputRaw #-}
+
+-- | Output indentation consisting of appropriate number of spaces.
+
+outputIndent :: Render ()
+outputIndent = asks rcIndent >>= outputRaw . buildIndent
+{-# INLINE outputIndent #-}
+
+-- | Output piece of strict 'Text' with added indentation.
+
+outputIndented :: Text -> Render ()
+outputIndented txt = do
+  level <- asks rcIndent
+  lnode <- asks rcLastNode
+  let f x = outputRaw (T.replace "\n" ("\n" <> buildIndent level) x)
+  if lnode && T.isSuffixOf "\n" txt
+    then f (T.init txt) >> outputRaw "\n"
+    else f txt
+{-# INLINE outputIndented #-}
+
+-- | Render a partial.
+
+renderPartial
+  :: PName             -- ^ Name of partial to render
+  -> Maybe Pos         -- ^ Indentation level to use
+  -> (Node -> Render ()) -- ^ How to render nodes in that partial
+  -> Render ()
+renderPartial pname i f =
+  local u (outputIndent >> getNodes >>= renderMany f)
+  where
+    u rc = rc
+      { rcIndent   = addIndents i (rcIndent rc)
+      , rcPrefix   = mempty
+      , rcTemplate = (rcTemplate rc) { templateActual = pname }
+      , rcLastNode = True }
+{-# INLINE renderPartial #-}
+
+-- | Get collection of 'Node's for actual template.
+
+getNodes :: Render [Node]
+getNodes = do
+  Template actual cache <- asks rcTemplate
+  return (M.findWithDefault [] actual cache)
+{-# INLINE getNodes #-}
+
+-- | Render many nodes.
+
+renderMany
+  :: (Node -> Render ()) -- ^ How to render a node
+  -> [Node]            -- ^ The collection of nodes to render
+  -> Render ()
+renderMany _ [] = return ()
+renderMany f [n] = do
+  ln <- asks rcLastNode
+  local (\rc -> rc { rcLastNode = ln && rcLastNode rc }) (f n)
+renderMany f (n:ns) = do
+  local (\rc -> rc { rcLastNode = False }) (f n)
+  renderMany f ns
+
+-- | Lookup a 'Value' by its 'Key'.
+
+lookupKey :: Key -> Render Value
+lookupKey (Key []) = NE.head <$> asks rcContext
+lookupKey k = do
+  v <- asks rcContext
+  p <- asks rcPrefix
+  return . fromMaybe Null $
+    if (null . drop 1 . unKey) k
+      then let f x = asum (simpleLookup (x <> k) <$> v)
+           in asum (fmap (f . Key) . reverse . tails $ unKey p)
+      else asum (simpleLookup (p <> k) <$> v)
+
+-- | Lookup a 'Value' by traversing another 'Value' using given 'Key' as
+-- “path”.
+
+simpleLookup :: Key -> Value -> Maybe Value
+simpleLookup (Key [])     obj        = return obj
+simpleLookup (Key (k:ks)) (Object m) = H.lookup k m >>= simpleLookup (Key ks)
+simpleLookup _            _          = Nothing
+{-# INLINE simpleLookup #-}
+
+-- | Enter the section by adding given 'Key' prefix to current prefix.
+
+enterSection :: Key -> Render a -> Render a
+enterSection p =
+  local (\rc -> rc { rcPrefix = p <> rcPrefix rc })
+{-# INLINE enterSection #-}
+
+-- | Add new value on the top of context. The new value has the highest
+-- priority when lookup takes place.
+
+addToLocalContext :: Value -> Render a -> Render a
+addToLocalContext v =
+  local (\rc -> rc { rcContext = NE.cons v (rcContext rc) })
+{-# INLINE addToLocalContext #-}
+
+----------------------------------------------------------------------------
+-- Helpers
+
+-- | Add two 'Maybe' 'Pos' values together.
+
+addIndents :: Maybe Pos -> Maybe Pos -> Maybe Pos
+addIndents Nothing  Nothing  = Nothing
+addIndents Nothing  (Just x) = Just x
+addIndents (Just x) Nothing  = Just x
+addIndents (Just x) (Just y) = Just (x S.<> y)
+{-# INLINE addIndents #-}
+
+-- | Build intentation of specified length by repeating the space character.
+
+buildIndent :: Maybe Pos -> Text
+buildIndent Nothing = ""
+buildIndent (Just p) = let n = fromIntegral (unPos p) - 1 in T.replicate n " "
+{-# INLINE buildIndent #-}
 
 -- | Select invisible values.
 
@@ -89,30 +248,6 @@ isBlank (Object   m) = H.null m
 isBlank (Array    a) = V.null a
 isBlank _            = False
 {-# INLINE isBlank #-}
-
--- | Lookup value in Aeson's 'Value' and return it if it's found. If the
--- value is missing, return 'Null'.
-
-lookupValue
-  :: Key               -- ^ The key prefix (entering a section changes it)
-  -> Key               -- ^ The key to look up
-  -> Value             -- ^ The context
-  -> Value             -- ^ The resulting value
-lookupValue _ (Key []) v = v
-lookupValue p k v = fromMaybe Null $
-  if (null . drop 1 . unKey) k
-    then let f x = simpleLookup (x <> k) v
-         in asum (fmap (f . Key ) . reverse . tails $ unKey p)
-    else simpleLookup (p <> k) v -- ???
-{-# INLINE lookupValue #-}
-
--- | TODO
-
-simpleLookup :: Key -> Value -> Maybe Value
-simpleLookup (Key [])     obj        = return obj
-simpleLookup (Key (k:ks)) (Object m) = H.lookup k m >>= simpleLookup (Key ks)
-simpleLookup _            _          = Nothing -- ??
-{-# INLINE simpleLookup #-}
 
 -- | Render Aeson's 'Value' /without/ HTML escaping.
 

@@ -19,15 +19,15 @@ where
 
 import Control.Monad.Catch (MonadThrow (..))
 import Control.Monad.Except
-import Data.Text (Text)
+import Data.Text.Lazy (Text)
 import System.Directory
 import Text.Megaparsec
 import Text.Mustache.Parser
 import Text.Mustache.Type
-import qualified Data.Map        as M
-import qualified Data.Text       as T
-import qualified Data.Text.IO    as T
-import qualified System.FilePath as F
+import qualified Data.Map          as M
+import qualified Data.Text         as T
+import qualified Data.Text.Lazy.IO as TL
+import qualified System.FilePath   as F
 
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative ((<$>))
@@ -61,7 +61,7 @@ compileMustacheDir path pname =
 compileMustacheFile :: (MonadIO m, MonadThrow m)
   => FilePath          -- ^ Location of the file
   -> m Template
-compileMustacheFile path = liftIO (T.readFile path) >>=
+compileMustacheFile path = liftIO (TL.readFile path) >>=
   withException . compileMustacheText (pathToPName path)
 
 -- | Compile Mustache template from 'Text' value. The cache will contain
@@ -87,7 +87,7 @@ isMustacheFile path = do
   liftIO (print (exists && rightExtension))
   return (exists && rightExtension)
 
--- | Build a 'Key' from given 'FilePath'.
+-- | Build a 'PName' from given 'FilePath'.
 
 pathToPName :: FilePath -> PName
 pathToPName = PName . T.pack . F.takeBaseName

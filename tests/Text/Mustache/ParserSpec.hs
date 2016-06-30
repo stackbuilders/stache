@@ -27,8 +27,8 @@ spec = describe "parseMustache" $ do
   let p = parseMustache ""
       key = Key . pure
   it "parses text" $
-    let t = "test12356p0--=-34{}jnv,\n"
-    in p t `shouldParse` [TextBlock t]
+    p "test12356p0--=-34{}jnv,\n"
+      `shouldParse` [TextBlock "test12356p0--=-34{}jnv,\n"]
   context "when parsing a variable" $ do
     context "with white space" $ do
       it "parses escaped {{ variable }}" $

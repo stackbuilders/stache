@@ -21,7 +21,7 @@ import Control.Monad.State.Lazy
 import Data.Char (isSpace)
 import Data.List (intercalate)
 import Data.Maybe (catMaybes)
-import Data.Text (Text)
+import Data.Text.Lazy (Text)
 import Text.Megaparsec
 import Text.Mustache.Type
 import qualified Data.Text             as T
