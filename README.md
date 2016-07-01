@@ -7,9 +7,6 @@
 [![Build Status](https://travis-ci.org/stackbuilders/stache.svg?branch=master)](https://travis-ci.org/stackbuilders/stache)
 [![Coverage Status](https://coveralls.io/repos/github/stackbuilders/stache/badge.svg?branch=master)](https://coveralls.io/github/stackbuilders/stache?branch=master)
 
-This is Haskell implementation of
-[Mustache templates](https://mustache.github.io/).
-
 This is a Haskell implementation of Mustache templates. The implementation
 conforms to the version 1.1.3 of official [Mustache specification]
 (https://github.com/mustache/spec). It's also faster than some alternative

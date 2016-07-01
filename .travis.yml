@@ -23,15 +23,21 @@ install:
  - cabal --version
  - echo "$(ghc --version) [$(ghc --print-project-git-commit-id 2> /dev/null || echo '?')]"
  - travis_retry cabal update
- - cabal install --only-dependencies --enable-tests
+ - case "$GHCVER" in
+    "7.8.4") cabal install --only-dependencies ;;
+    *)       cabal install --only-dependencies --enable-tests ;;
+   esac
 
 script:
  - case "$CABALVER" in
-    "1.18") cabal configure --enable-tests --enable-library-coverage -v2 -f dev ;;
+    "1.18") cabal configure --enable-library-coverage -v2 -f dev ;;
     *)      cabal configure --enable-tests --enable-coverage -v2 -f dev ;;
    esac
  - travis_wait 40 cabal build
- - cabal test --show-details=always
+ - case "$GHCVER" in
+    "7.8.4") true ;;
+    *)       cabal test --show-details=always ;;
+   esac
  - cabal sdist
  - cabal haddock | grep "100%" | wc -l | grep "6"
 
