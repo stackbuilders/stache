@@ -15,6 +15,7 @@
 -- require at least @template-haskell-2.11@).
 
 {-# LANGUAGE CPP             #-}
+{-# LANGUAGE RankNTypes      #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 module Text.Mustache.Compile.TH
@@ -25,17 +26,24 @@ where
 
 import Control.Monad.Catch (try)
 import Data.Text.Lazy (Text)
+import Data.Typeable (cast)
 import Language.Haskell.TH hiding (Dec)
+import Language.Haskell.TH.Syntax (lift)
 import Text.Megaparsec hiding (try)
 import Text.Mustache.Type
+import qualified Data.Text             as T
 import qualified Text.Mustache.Compile as C
 
+#if !MIN_VERSION_base(4,8,0)
+import Control.Applicative
+#endif
+
 #if MIN_VERSION_template_haskell(2,11,0)
-import Language.Haskell.TH.Syntax (liftData)
+import Language.Haskell.TH.Syntax (dataToExpQ)
 #else
 import Data.Data (Data)
-liftData :: Data a => a -> Q Exp
-liftData _ = fail "The feature requires at least GHC 8 to work"
+dataToExpQ :: Data a => (forall b. Data b => b -> Maybe (Q Exp)) -> a -> Q Exp
+dataToExpQ _ _ = fail "The feature requires at least GHC 8 to work"
 #endif
 
 -- | Compile all templates in specified directory and select one. Template
@@ -72,4 +80,9 @@ handleEither :: Either (ParseError Char Dec) Template -> Q Exp
 handleEither val =
   case val of
     Left err -> fail (parseErrorPretty err)
-    Right template -> liftData template
+    Right template -> dataToExpQ (fmap liftText . cast) template
+
+-- | Lift strict 'T.Text' to 'Q' 'Exp'.
+
+liftText :: T.Text -> Q Exp
+liftText txt = AppE (VarE 'T.pack) <$> lift (T.unpack txt)
