@@ -83,10 +83,8 @@ compileMustacheText pname txt =
 
 isMustacheFile :: MonadIO m => FilePath -> m Bool
 isMustacheFile path = do
-  liftIO (putStrLn path)
   exists <- liftIO (doesFileExist path)
   let rightExtension = F.takeExtension path == ".mustache"
-  liftIO (print (exists && rightExtension))
   return (exists && rightExtension)
 
 -- | Build a 'PName' from given 'FilePath'.
