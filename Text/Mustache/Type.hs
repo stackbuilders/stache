@@ -11,7 +11,6 @@
 -- because "Text.Mustache" re-exports everything you may need, import that
 -- module instead.
 
-{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
@@ -26,18 +25,21 @@ where
 import Control.Monad.Catch (Exception)
 import Data.Data (Data)
 import Data.Map (Map)
+import Data.Semigroup
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Text.Megaparsec
+import qualified Data.Map  as M
 import qualified Data.Text as T
-
-#if !MIN_VERSION_base(4,8,0)
-import Data.Monoid (Monoid)
-#endif
 
 -- | Mustache template as name of “top-level” template and a collection of
 -- all available templates (partials).
+--
+-- 'Template' is a 'Semigroup'. This means that you can combine 'Template's
+-- (and their caches) using the ('<>') operator, the resulting 'Template'
+-- will have the same currently selected template as the left one. Union of
+-- caches is also left-biased.
 
 data Template = Template
   { templateActual :: PName
@@ -47,6 +49,9 @@ data Template = Template
     -- (as partials). The top-level one is also contained here and the
     -- “focus” can be switched easily by modifying 'templateActual'.
   } deriving (Eq, Ord, Show, Data, Typeable)
+
+instance Semigroup Template where
+  (Template pname x) <> (Template _ y) = Template pname (M.union x y)
 
 -- | Structural element of template.
 
