@@ -52,15 +52,20 @@ dataToExpQ _ _ = fail "The feature requires at least GHC 8 to work"
 --
 -- This version compiles the templates at compile time.
 
-compileMustacheDir :: FilePath -> PName -> Q Exp
-compileMustacheDir path pname =
-  (runIO . try) (C.compileMustacheDir path pname) >>= handleEither
+compileMustacheDir
+  :: PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> Q Exp             -- ^ The resulting template
+compileMustacheDir pname path =
+  (runIO . try) (C.compileMustacheDir pname path) >>= handleEither
 
 -- | Compile single Mustache template and select it.
 --
 -- This version compiles the template at compile time.
 
-compileMustacheFile :: FilePath -> Q Exp
+compileMustacheFile
+  :: FilePath          -- ^ Location of the file
+  -> Q Exp
 compileMustacheFile path =
   (runIO . try) (C.compileMustacheFile path) >>= handleEither
 
@@ -69,7 +74,10 @@ compileMustacheFile path =
 --
 -- This version compiles the template at compile time.
 
-compileMustacheText :: PName -> Text -> Q Exp
+compileMustacheText
+  :: PName             -- ^ How to name the template?
+  -> Text              -- ^ The template to compile
+  -> Q Exp
 compileMustacheText pname text =
   handleEither (C.compileMustacheText pname text)
 

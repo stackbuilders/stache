@@ -43,10 +43,10 @@ import Control.Applicative ((<$>))
 -- 'T.readFile'.
 
 compileMustacheDir :: (MonadIO m, MonadThrow m)
-  => FilePath          -- ^ Directory with templates
-  -> PName             -- ^ Which template to select after compiling
+  => PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
   -> m Template        -- ^ The resulting template
-compileMustacheDir path pname =
+compileMustacheDir pname path =
   liftIO (getDirectoryContents path) >>=
   filterM isMustacheFile . liftM (F.combine (F.takeDirectory path)) >>=
   liftM selectKey . foldM f (Template undefined M.empty)
