@@ -48,7 +48,7 @@ dataToExpQ _ _ = fail "The feature requires at least GHC 8 to work"
 
 -- | Compile all templates in specified directory and select one. Template
 -- files should have extension @mustache@, (e.g. @foo.mustache@) to be
--- recognized.
+-- recognized. This function /does not/ scan the directory recursively.
 --
 -- This version compiles the templates at compile time.
 

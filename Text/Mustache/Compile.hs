@@ -37,7 +37,7 @@ import Control.Applicative ((<$>))
 
 -- | Compile all templates in specified directory and select one. Template
 -- files should have extension @mustache@, (e.g. @foo.mustache@) to be
--- recognized.
+-- recognized. This function /does not/ scan the directory recursively.
 --
 -- The action can throw the same exceptions as 'getDirectoryContents', and
 -- 'T.readFile'.
