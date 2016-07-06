@@ -50,7 +50,7 @@
 -- >
 -- > main :: IO ()
 -- > main = do
--- >   let res = compileMustacheText (PName "foo")
+-- >   let res = compileMustacheText "foo"
 -- >         "Hi, {{name}}! You have:\n{{#things}}\n  * {{.}}\n{{/things}}\n"
 -- >   case res of
 -- >     Left err -> putStrLn (parseErrorPretty err)

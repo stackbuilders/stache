@@ -26,9 +26,11 @@ where
 import Control.Monad.Catch (Exception)
 import Data.Data (Data)
 import Data.Map (Map)
+import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Typeable (Typeable)
 import Text.Megaparsec
+import qualified Data.Text as T
 
 #if !MIN_VERSION_base(4,8,0)
 import Data.Monoid (Monoid)
@@ -69,10 +71,14 @@ data Node
 newtype Key = Key { unKey :: [Text] }
   deriving (Eq, Ord, Show, Monoid, Data, Typeable)
 
--- | Identifier for partials.
+-- | Identifier for partials. Note that with the @OverloadedStrings@
+-- extension you can use just string literals to create values of this type.
 
 newtype PName = PName { unPName :: Text }
   deriving (Eq, Ord, Show, Data, Typeable)
+
+instance IsString PName where
+  fromString = PName . T.pack
 
 -- | Exception that is thrown when parsing of a template has failed.
 

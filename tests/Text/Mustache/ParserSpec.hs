@@ -67,13 +67,13 @@ spec = describe "parseMustache" $ do
   context "when parsing a partial" $ do
     it "parses a partial with white space" $
       p "{{> that-s_my-partial }}" `shouldParse`
-        [Partial (PName "that-s_my-partial") (Just $ unsafePos 1)]
+        [Partial "that-s_my-partial" (Just $ unsafePos 1)]
     it "parses a partial without white space" $
       p "{{>that-s_my-partial}}" `shouldParse`
-        [Partial (PName "that-s_my-partial") (Just $ unsafePos 1)]
+        [Partial "that-s_my-partial" (Just $ unsafePos 1)]
     it "handles indented partial correctly" $
       p "   {{> next_one }}" `shouldParse`
-        [Partial (PName "next_one") (Just $ unsafePos 4)]
+        [Partial "next_one" (Just $ unsafePos 4)]
   context "when running into delimiter change" $ do
     it "has effect" $
       p "{{=<< >>=}}<<var>>{{var}}" `shouldParse`

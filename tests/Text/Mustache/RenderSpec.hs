@@ -24,7 +24,7 @@ main = hspec spec
 spec :: Spec
 spec = describe "renderMustache" $ do
   let r ns value =
-        let template = Template (PName "test") (M.singleton (PName "test") ns)
+        let template = Template "test" (M.singleton "test" ns)
         in renderMustache template value
       key = Key . pure
   it "leaves text block “as is”" $
@@ -97,13 +97,13 @@ spec = describe "renderMustache" $ do
         it "skips non-empty list" $
           r nodes (object ["foo" .= [True]]) `shouldBe` ""
   context "when rendering a partial" $ do
-    let nodes = [ Partial (PName "partial") (Just $ unsafePos 4)
+    let nodes = [ Partial "partial" (Just $ unsafePos 4)
                 , TextBlock "*" ]
     it "skips missing partial" $
       r nodes Null `shouldBe` "   *"
     it "renders partial correctly" $
-      let template = Template (PName "test") $
-            M.fromList [ (PName "test", nodes)
-                       , (PName "partial", [TextBlock "one\ntwo\nthree"]) ]
+      let template = Template "test" $
+            M.fromList [ ("test", nodes)
+                       , ("partial", [TextBlock "one\ntwo\nthree"]) ]
       in renderMustache template Null `shouldBe`
            "   one\n   two\n   three*"
