@@ -12,6 +12,7 @@
 -- module instead.
 
 {-# LANGUAGE DeriveDataTypeable         #-}
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Text.Mustache.Type
@@ -22,6 +23,7 @@ module Text.Mustache.Type
   , MustacheException (..) )
 where
 
+import Control.DeepSeq
 import Control.Monad.Catch (Exception)
 import Data.Data (Data)
 import Data.Map (Map)
@@ -29,6 +31,7 @@ import Data.Semigroup
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Typeable (Typeable)
+import GHC.Generics
 import Text.Megaparsec
 import qualified Data.Map  as M
 import qualified Data.Text as T
@@ -48,7 +51,7 @@ data Template = Template
     -- ^ Collection of all templates that are available for interpolation
     -- (as partials). The top-level one is also contained here and the
     -- “focus” can be switched easily by modifying 'templateActual'.
-  } deriving (Eq, Ord, Show, Data, Typeable)
+  } deriving (Eq, Ord, Show, Data, Typeable, Generic)
 
 instance Semigroup Template where
   (Template pname x) <> (Template _ y) = Template pname (M.union x y)
@@ -63,7 +66,7 @@ data Node
   | InvertedSection Key [Node] -- ^ Inverted section
   | Partial         PName (Maybe Pos)
     -- ^ Partial with indentation level ('Nothing' means it was inlined)
-  deriving (Eq, Ord, Show, Data, Typeable)
+  deriving (Eq, Ord, Show, Data, Typeable, Generic)
 
 -- | Identifier for values to interpolate.
 --
@@ -74,20 +77,24 @@ data Node
 --     * @[text1, text2]@ — multiple keys represent dotted names.
 
 newtype Key = Key { unKey :: [Text] }
-  deriving (Eq, Ord, Show, Monoid, Data, Typeable)
+  deriving (Eq, Ord, Show, Monoid, Data, Typeable, Generic)
+
+instance NFData Key
 
 -- | Identifier for partials. Note that with the @OverloadedStrings@
 -- extension you can use just string literals to create values of this type.
 
 newtype PName = PName { unPName :: Text }
-  deriving (Eq, Ord, Show, Data, Typeable)
+  deriving (Eq, Ord, Show, Data, Typeable, Generic)
 
 instance IsString PName where
   fromString = PName . T.pack
 
+instance NFData PName
+
 -- | Exception that is thrown when parsing of a template has failed.
 
 data MustacheException = MustacheException (ParseError Char Dec)
-  deriving (Eq, Show, Typeable)
+  deriving (Eq, Show, Typeable, Generic)
 
 instance Exception MustacheException
