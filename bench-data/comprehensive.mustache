@@ -1,0 +1,18 @@
+This is a comprehensive example of Mustache template.
+
+It has {{first-thing}} and {{&second-thing}}, as well as a bit of
+{{third-thing}}.
+
+John has the following items today:
+{{#items}}
+  * {{.}}
+{{/items}}
+{{^items}}
+  None.
+{{/items}}
+
+We could also use this text as a start of our conversation:
+
+{{> lorem-ipsum}}
+
+But we won't.
