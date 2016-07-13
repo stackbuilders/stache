@@ -94,8 +94,10 @@ brender' desc path pname value = env (compileMustacheDir pname path)
 ----------------------------------------------------------------------------
 -- Orphan instances
 
+#if !MIN_VERSION_megaparsec(5,0,1)
 instance NFData Pos where
   rnf = rnf . unPos
+#endif
 
 instance NFData Node
 
