@@ -11,10 +11,8 @@
 -- import the module, because "Text.Mustache" re-exports everything you may
 -- need, import that module instead.
 
-{-# LANGUAGE CPP                        #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE RecordWildCards            #-}
+{-# LANGUAGE CPP               #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.Render
   ( renderMustache )
