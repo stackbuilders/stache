@@ -43,25 +43,11 @@ category:             Text
 synopsis:             Mustache templates for Haskell
 build-type:           Simple
 description:          Mustache templates for Haskell.
-extra-source-files:   CHANGELOG.md
+extra-doc-files:      CHANGELOG.md
                     , README.md
-                    , bench-data/comprehensive.mustache
-                    , bench-data/escaped-var.mustache
-                    , bench-data/inverted-section.mustache
-                    , bench-data/lorem-ipsum.mustache
-                    , bench-data/nested-sections.mustache
-                    , bench-data/partial.mustache
-                    , bench-data/section.mustache
-                    , bench-data/unescaped-var-spec.mustache
-                    , bench-data/unescaped-var.mustache
-                    , specs/comments.yml
-                    , specs/delimiters.yml
-                    , specs/interpolation.yml
-                    , specs/inverted.yml
-                    , specs/partials.yml
-                    , specs/sections.yml
-                    , templates/bar.mustache
-                    , templates/foo.mustache
+data-files:           bench-data/*.mustache
+                    , specs/*.yml
+                    , templates/*.mustache
 
 source-repository head
   type:               git
