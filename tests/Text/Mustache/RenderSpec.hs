@@ -52,6 +52,8 @@ spec = describe "renderMustache" $ do
           r nodes (object ["foo" .= ([] :: [Text])]) `shouldBe` ""
         it "skips empty object" $
           r nodes (object ["foo" .= object []]) `shouldBe` ""
+        it "skips empty string" $
+          r nodes (object ["foo" .= ("" :: Text)]) `shouldBe` ""
       context "when the key is a Boolean true" $
         it "renders the section without interpolation" $
           r [Section (key "foo") [TextBlock "brr"]]
@@ -70,10 +72,20 @@ spec = describe "renderMustache" $ do
           r [Section (key "foo") [TextBlock "brr"]]
             (object ["foo" .= [True, True]])
             `shouldBe` "brrbrr"
-      context "wehn the key is a list of objects" $
+      context "when the key is a list of objects" $
         it "renders the section many times changing context" $
           r nodes (object ["foo" .= [object ["bar" .= x] | x <- [1..4] :: [Int]]])
             `shouldBe` "1*2*3*4*"
+      context "when the key is a number" $
+        it "renders the section" $
+          r [Section (key "foo") [TextBlock "brr"]]
+            (object ["foo" .= (5 :: Int)])
+            `shouldBe` "brr"
+      context "when the key is a non-empty string" $
+        it "renders the section" $
+          r [Section (key "foo") [TextBlock "brr"]]
+            (object ["foo" .= ("x" :: Text)])
+            `shouldBe` "brr"
   context "when rendering an inverted section" $ do
     let nodes = [InvertedSection (key "foo") [TextBlock "Here!"]]
     context "when the key is not present" $

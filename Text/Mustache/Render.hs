@@ -90,12 +90,8 @@ renderNode (Section k ns) = do
         Array xs ->
           forM_ (V.toList xs) $ \x ->
             addToLocalContext x (renderMany renderNode ns)
-        Bool True ->
-          renderMany renderNode ns
-        String _  ->
-          renderMany renderNode ns
         _ ->
-          return ()
+          renderMany renderNode ns
 renderNode (InvertedSection k ns) = do
   val <- lookupKey k
   when (isBlank val) $
@@ -246,6 +242,7 @@ isBlank Null         = True
 isBlank (Bool False) = True
 isBlank (Object   m) = H.null m
 isBlank (Array    a) = V.null a
+isBlank (String   s) = T.null s
 isBlank _            = False
 {-# INLINE isBlank #-}
 
