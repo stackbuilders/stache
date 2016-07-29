@@ -11,6 +11,7 @@
 -- because "Text.Mustache" re-exports everything you may need, import that
 -- module instead.
 
+{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -24,7 +25,7 @@ module Text.Mustache.Type
 where
 
 import Control.DeepSeq
-import Control.Monad.Catch (Exception)
+import Control.Exception (Exception(..))
 import Data.Data (Data)
 import Data.Map (Map)
 import Data.Semigroup
@@ -97,4 +98,9 @@ instance NFData PName
 data MustacheException = MustacheException (ParseError Char Dec)
   deriving (Eq, Show, Typeable, Generic)
 
+#if MIN_VERSION_base(4,8,0)
+instance Exception MustacheException where
+  displayException (MustacheException e) = parseErrorPretty e
+#else
 instance Exception MustacheException
+#endif

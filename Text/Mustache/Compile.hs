@@ -63,8 +63,11 @@ compileMustacheDir pname path =
 compileMustacheFile :: (MonadIO m, MonadThrow m)
   => FilePath          -- ^ Location of the file
   -> m Template
-compileMustacheFile path = liftIO (TL.readFile path) >>=
-  withException . compileMustacheText (pathToPName path)
+compileMustacheFile path =
+  liftIO (TL.readFile path) >>= withException . compile
+  where
+    pname = pathToPName path
+    compile = fmap (Template pname . M.singleton pname) . parseMustache path
 
 -- | Compile Mustache template from a lazy 'Text' value. The cache will
 -- contain only this template named according to given 'PName'.
