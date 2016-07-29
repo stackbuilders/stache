@@ -74,8 +74,11 @@ pUnescapedVariable = UnescapedVar <$> pTag "&"
 {-# INLINE pUnescapedVariable #-}
 
 pUnescapedSpecial :: Parser Node
-pUnescapedSpecial =
-  UnescapedVar <$> between (symbol "{{{") (string "}}}") pKey
+pUnescapedSpecial = do
+  start <- gets openingDel
+  end   <- gets closingDel
+  between (symbol $ start ++ "{") (string $ "}" ++ end) $
+    UnescapedVar <$> pKey
 {-# INLINE pUnescapedSpecial #-}
 
 pSection :: String -> (Key -> [Node] -> Node) -> Parser Node
