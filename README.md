@@ -9,15 +9,13 @@
 
 This is a Haskell implementation of Mustache templates. The implementation
 conforms to the version 1.1.3 of official [Mustache specification]
-(https://github.com/mustache/spec). It's also faster than some alternative
-Mustache implementations in Haskell because it uses `Data.Text.Lazy.Builder`
-under the hood. It is extremely simple and straightforward to use with
-minimal but complete API — three functions to compile templates (from
-directory, from file, and from lazy text) and one to render them.
+(https://github.com/mustache/spec). It is extremely simple and
+straightforward to use with minimal but complete API — three functions to
+compile templates (from directory, from file, and from lazy text) and one to
+render them.
 
 The implementation uses the Megaparsec parsing library to parse the
-templates which is results in superior quality of error messages and is also
-faster than Parsec-based ones.
+templates which is results in superior quality of error messages.
 
 For rendering you only need to create Aeson's `Value` where you put the data
 to interpolate. Since the library re-uses Aeson's instances and most data
