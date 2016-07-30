@@ -77,7 +77,7 @@ data Node
 --     * @[text1, text2]@ — multiple keys represent dotted names.
 
 newtype Key = Key { unKey :: [Text] }
-  deriving (Eq, Ord, Show, Monoid, Data, Typeable, Generic)
+  deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Typeable, Generic)
 
 instance NFData Key
 
