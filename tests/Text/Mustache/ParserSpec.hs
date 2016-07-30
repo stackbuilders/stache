@@ -81,6 +81,9 @@ spec = describe "parseMustache" $ do
     it "handles whitespace just as well" $
       p "{{=<<   >>=}}<<  var >>{{ var  }}" `shouldParse`
         [EscapedVar (key "var"), TextBlock "{{ var  }}"]
+    it "affects {{{s" $
+      p "{{=<< >>=}}<<{var}>>" `shouldParse`
+        [UnescapedVar (key "var")]
     it "parses two subsequent delimiter changes" $
       p "{{=(( ))=}}(( var ))((=-- $-=))--#section$---/section$-" `shouldParse`
         [EscapedVar (key "var"), Section (key "section") []]
