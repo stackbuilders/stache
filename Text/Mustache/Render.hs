@@ -85,13 +85,11 @@ renderNode (Section k ns) = do
   enterSection k $
     unless (isBlank val) $
       case val of
-        Object _ ->
-          addToLocalContext val (renderMany renderNode ns)
         Array xs ->
           forM_ (V.toList xs) $ \x ->
             addToLocalContext x (renderMany renderNode ns)
         _ ->
-          renderMany renderNode ns
+          addToLocalContext val (renderMany renderNode ns)
 renderNode (InvertedSection k ns) = do
   val <- lookupKey k
   when (isBlank val) $

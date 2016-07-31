@@ -76,16 +76,24 @@ spec = describe "renderMustache" $ do
         it "renders the section many times changing context" $
           r nodes (object ["foo" .= [object ["bar" .= x] | x <- [1..4] :: [Int]]])
             `shouldBe` "1*2*3*4*"
-      context "when the key is a number" $
+      context "when the key is a number" $ do
         it "renders the section" $
           r [Section (key "foo") [TextBlock "brr"]]
             (object ["foo" .= (5 :: Int)])
             `shouldBe` "brr"
-      context "when the key is a non-empty string" $
+        it "uses the key as context" $
+          r [Section (key "foo") [EscapedVar (Key [])]]
+            (object ["foo" .= (5 :: Int)])
+            `shouldBe` "5"
+      context "when the key is a non-empty string" $ do
         it "renders the section" $
           r [Section (key "foo") [TextBlock "brr"]]
             (object ["foo" .= ("x" :: Text)])
             `shouldBe` "brr"
+        it "uses the key as context" $
+          r [Section (key "foo") [EscapedVar (Key [])]]
+            (object ["foo" .= ("x" :: Text)])
+            `shouldBe` "x"
   context "when rendering an inverted section" $ do
     let nodes = [InvertedSection (key "foo") [TextBlock "Here!"]]
     context "when the key is not present" $
