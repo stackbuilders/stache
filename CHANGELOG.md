@@ -1,3 +1,8 @@
+## Stache 0.1.5
+
+* When section's key is a number or non-empty string, it's accessible as `.`
+  in the section body.
+
 ## Stache 0.1.4
 
 * Numbers are now treated as “true” values.
