@@ -184,19 +184,27 @@ lookupKey (Key []) = NE.head <$> asks rcContext
 lookupKey k = do
   v <- asks rcContext
   p <- asks rcPrefix
-  return . fromMaybe Null $
-    if (null . drop 1 . unKey) k
-      then let f x = asum (simpleLookup (x <> k) <$> v)
-           in asum (fmap (f . Key) . reverse . tails $ unKey p)
-      else asum (simpleLookup (p <> k) <$> v)
+  let f x = asum (simpleLookup False (x <> k) <$> v)
+  (return . fromMaybe Null . asum) (fmap (f . Key) . reverse . tails $ unKey p)
 
 -- | Lookup a 'Value' by traversing another 'Value' using given 'Key' as
 -- “path”.
 
-simpleLookup :: Key -> Value -> Maybe Value
-simpleLookup (Key [])     obj        = return obj
-simpleLookup (Key (k:ks)) (Object m) = H.lookup k m >>= simpleLookup (Key ks)
-simpleLookup _            _          = Nothing
+simpleLookup
+  :: Bool
+     -- ^ At least one part of the path matched, in this case we are
+     -- “committed” to this lookup and cannot say “there is nothing, try
+     -- other level”. This is necessary to pass the “Dotted Names — Context
+     -- Precedence” test from the “interpolation.yml” spec.
+  -> Key               -- ^ The key to lookup
+  -> Value             -- ^ Source value
+  -> Maybe Value       -- ^ Looked-up value
+simpleLookup _ (Key [])     obj        = return obj
+simpleLookup c (Key (k:ks)) (Object m) =
+  case H.lookup k m of
+    Nothing -> if c then Just Null else Nothing
+    Just  v -> simpleLookup True (Key ks) v
+simpleLookup _ _ _ = Nothing
 {-# INLINE simpleLookup #-}
 
 -- | Enter the section by adding given 'Key' prefix to current prefix.

@@ -127,3 +127,14 @@ spec = describe "renderMustache" $ do
                        , ("partial", [TextBlock "one\ntwo\nthree"]) ]
       in renderMustache template Null `shouldBe`
            "   one\n   two\n   three*"
+  context "when using dotted keys inside a section" $
+    it "it should be equivalent to access via one more section" $
+      r [ Section (key "things")
+          [ EscapedVar (Key ["atts", "color"])
+          , TextBlock " == "
+          , Section (key "atts") [EscapedVar (key "color")] ] ]
+        (object ["things" .=
+                 [object
+                  ["atts" .=
+                   object ["color" .= ("blue" :: Text)]]]])
+        `shouldBe` "blue == blue"
