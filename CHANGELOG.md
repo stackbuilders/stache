@@ -1,3 +1,7 @@
+## Stache 0.1.6
+
+* Fixed a bug in the lookup algorithm for dot-separated keys.
+
 ## Stache 0.1.5
 
 * When section's key is a number or non-empty string, it's accessible as `.`
