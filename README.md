@@ -73,6 +73,7 @@ helpful:
 * The official Mustache site: https://mustache.github.io/
 * The manual: https://mustache.github.io/mustache.5.html
 * The specification: https://github.com/mustache/spec
+* Stack Builders Stache tutorial: https://www.stackbuilders.com/tutorials/haskell/mustache-templates/
 
 ## License
 
