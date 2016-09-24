@@ -14,24 +14,28 @@
 -- At the moment, functions in this module only work with GHC 8 (they
 -- require at least @template-haskell-2.11@).
 
-{-# LANGUAGE CPP             #-}
-{-# LANGUAGE RankNTypes      #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE CPP               #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes        #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Text.Mustache.Compile.TH
   ( compileMustacheDir
   , compileMustacheFile
-  , compileMustacheText )
+  , compileMustacheText
+  , mustache )
 where
 
 import Control.Monad.Catch (try)
 import Data.Text.Lazy (Text)
 import Data.Typeable (cast)
 import Language.Haskell.TH hiding (Dec)
+import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Language.Haskell.TH.Syntax (lift)
 import Text.Megaparsec hiding (try)
 import Text.Mustache.Type
 import qualified Data.Text             as T
+import qualified Data.Text.Lazy        as TL
 import qualified Text.Mustache.Compile as C
 
 #if !MIN_VERSION_base(4,8,0)
@@ -80,6 +84,27 @@ compileMustacheText
   -> Q Exp
 compileMustacheText pname text =
   handleEither (C.compileMustacheText pname text)
+
+-- | Compile Mustache using QuasiQuoter. Usage:
+--
+-- > {-# LANGUAGE QuasiQuotes #-}
+-- > import Text.Mustache.Compile.TH (mustache)
+-- >
+-- > foo :: Template
+-- > foo = [mustache|This is my inline {{ template }}.|]
+--
+-- Name of created partial is set to @"quasi-quoted"@. You can extend cache
+-- of 'Template' created this way using 'mappend' and so work with partials
+-- as usual.
+--
+-- @since 0.1.7
+
+mustache :: QuasiQuoter
+mustache = QuasiQuoter
+  { quoteExp  = compileMustacheText "quasi-quoted" . TL.pack
+  , quotePat  = undefined
+  , quoteType = undefined
+  , quoteDec  = undefined }
 
 -- | Given an 'Either' result return 'Right' and signal pretty-printed error
 -- if we have a 'Left'.

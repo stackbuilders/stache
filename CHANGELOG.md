@@ -1,3 +1,7 @@
+## Stache 0.1.7
+
+* Added `mustache` quasi-quoter.
+
 ## Stache 0.1.6
 
 * Fixed a bug in the lookup algorithm for dot-separated keys.

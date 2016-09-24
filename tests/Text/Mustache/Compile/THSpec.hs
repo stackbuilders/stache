@@ -1,5 +1,6 @@
 {-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes       #-}
 {-# LANGUAGE TemplateHaskell   #-}
 
 module Text.Mustache.Compile.THSpec
@@ -22,6 +23,11 @@ main = hspec spec
 spec :: Spec
 #if MIN_VERSION_template_haskell(2,11,0)
 spec = do
+  describe "mustache" $
+    it "compiles template using QuasiQuotes at compile time" $
+      [TH.mustache|From Quasi-Quote!
+|]
+        `shouldBe` qqTemplate
   describe "compileMustacheText" $
     it "compiles template from text at compile time" $
       $(TH.compileMustacheText "foo" "This is the ‘foo’.\n")
@@ -34,6 +40,10 @@ spec = do
     it "compiles templates from directory at compile time" $
       $(TH.compileMustacheDir "foo" "templates/")
         `shouldBe` (fooTemplate <> barTemplate)
+
+qqTemplate :: Template
+qqTemplate = Template "quasi-quoted" $
+  M.singleton "quasi-quoted" [TextBlock "From Quasi-Quote!\n"]
 
 fooTemplate :: Template
 fooTemplate = Template "foo" $
