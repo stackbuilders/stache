@@ -95,7 +95,7 @@ test-suite tests
                     , base             >= 4.7  && < 5.0
                     , containers       >= 0.5  && < 0.6
                     , hspec            >= 2.0  && < 3.0
-                    , hspec-megaparsec >= 0.2  && < 0.3
+                    , hspec-megaparsec >= 0.2  && < 0.4
                     , megaparsec       >= 5.0  && < 6.0
                     , stache           >= 0.1.6
                     , text             >= 1.2  && < 1.3
