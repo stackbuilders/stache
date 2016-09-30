@@ -58,12 +58,12 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  specData "Comments"      $(embedFile "specs/comments.yml")
-  specData "Delimiters"    $(embedFile "specs/delimiters.yml")
-  specData "Interpolation" $(embedFile "specs/interpolation.yml")
-  specData "Inverted"      $(embedFile "specs/inverted.yml")
-  specData "Partials"      $(embedFile "specs/partials.yml")
-  specData "Sections"      $(embedFile "specs/sections.yml")
+  specData "Comments"      $(embedFile "specification/comments.yml")
+  specData "Delimiters"    $(embedFile "specification/delimiters.yml")
+  specData "Interpolation" $(embedFile "specification/interpolation.yml")
+  specData "Inverted"      $(embedFile "specification/inverted.yml")
+  specData "Partials"      $(embedFile "specification/partials.yml")
+  specData "Sections"      $(embedFile "specification/sections.yml")
 
 specData :: String -> ByteString -> Spec
 specData aspect bytes = describe aspect $ do

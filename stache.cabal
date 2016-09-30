@@ -46,7 +46,7 @@ description:          Mustache templates for Haskell.
 extra-doc-files:      CHANGELOG.md
                     , README.md
 data-files:           bench-data/*.mustache
-                    , specs/*.yml
+                    , specification/*.yml
                     , templates/*.mustache
 
 source-repository head
