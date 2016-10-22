@@ -15,7 +15,7 @@ compile templates (from directory, from file, and from lazy text) and one to
 render them.
 
 The implementation uses the Megaparsec parsing library to parse the
-templates which is results in superior quality of error messages.
+templates which results in superior quality of error messages.
 
 For rendering you only need to create Aeson's `Value` where you put the data
 to interpolate. Since the library re-uses Aeson's instances and most data
