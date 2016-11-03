@@ -1,3 +1,9 @@
+## Stache 0.1.8
+
+* Rename `specs` directory to `specification` as the previous name somehow
+  caused conflicts when deploying an application on Heroku with Stache as a
+  dependency.
+
 ## Stache 0.1.7
 
 * Added `mustache` quasi-quoter.
