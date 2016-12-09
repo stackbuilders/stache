@@ -1,3 +1,7 @@
+## Stache 0.2.0
+
+* Allowed `directory-1.3.0.0`.
+
 ## Stache 0.1.8
 
 * Rename `specs` directory to `specification` as the previous name somehow
