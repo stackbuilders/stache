@@ -102,5 +102,5 @@ pathToPName = PName . T.pack . F.takeBaseName
 withException :: MonadThrow m
   => Either (ParseError Char Dec) Template -- ^ Value to process
   -> m Template        -- ^ The result
-withException = either (throwM . MustacheException) return
+withException = either (throwM . MustacheParserException) return
 {-# INLINE withException #-}

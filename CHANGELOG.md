@@ -1,5 +1,10 @@
 ## Stache 0.2.0
 
+* Breaking change: the `renderMustache` function will throw an exception
+  when referenced key was not provided. This is a better behavior than
+  silent interpolation of an empty string, because missing values are almost
+  always a mistake and it's easy to provide empty strings explicitly anyway.
+
 * Allowed `directory-1.3.0.0`.
 
 ## Stache 0.1.8

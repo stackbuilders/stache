@@ -15,11 +15,13 @@
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings          #-}
 
 module Text.Mustache.Type
   ( Template (..)
   , Node (..)
   , Key (..)
+  , showKey
   , PName (..)
   , MustacheException (..) )
 where
@@ -41,7 +43,7 @@ import qualified Data.Text as T
 -- all available templates (partials).
 --
 -- 'Template' is a 'Semigroup'. This means that you can combine 'Template's
--- (and their caches) using the ('<>') operator, the resulting 'Template'
+-- (and their caches) using the @('<>')@ operator, the resulting 'Template'
 -- will have the same currently selected template as the left one. Union of
 -- caches is also left-biased.
 
@@ -82,6 +84,15 @@ newtype Key = Key { unKey :: [Text] }
 
 instance NFData Key
 
+-- | Pretty-print a key, this is helpful, for example, if you want to
+-- display an error message.
+--
+-- @since 0.2.0
+
+showKey :: Key -> Text
+showKey (Key []) = "<implicit>"
+showKey (Key xs) = T.intercalate "." xs
+
 -- | Identifier for partials. Note that with the @OverloadedStrings@
 -- extension you can use just string literals to create values of this type.
 
@@ -93,14 +104,28 @@ instance IsString PName where
 
 instance NFData PName
 
--- | Exception that is thrown when parsing of a template has failed.
+-- | Exception that is thrown when parsing of a template has failed or
+-- referenced values were not provided.
 
-data MustacheException = MustacheException (ParseError Char Dec)
+data MustacheException
+  = MustacheParserException (ParseError Char Dec)
+    -- ^ Template parser has failed. This contains the parse error.
+    --
+    -- /Before version 0.2.0 it was called 'MustacheException'./
+  | MustacheRenderException PName Key
+    -- ^ A referenced value was not provided. The exception provides info
+    -- about partial in which the issue happened 'PName' and name of the
+    -- missing key 'Key'.
+    --
+    -- @since 0.2.0
   deriving (Eq, Show, Typeable, Generic)
 
 #if MIN_VERSION_base(4,8,0)
 instance Exception MustacheException where
-  displayException (MustacheException e) = parseErrorPretty e
+  displayException (MustacheParserException e) = parseErrorPretty e
+  displayException (MustacheRenderException pname key) =
+    "Referenced value was not provided in partial \"" ++ T.unpack (unPName pname) ++
+    "\", key: " ++ T.unpack (showKey key)
 #else
 instance Exception MustacheException
 #endif

@@ -14,7 +14,7 @@ main :: IO ()
 main = hspec spec
 
 spec :: Spec
-spec =
+spec = do
   describe "Template instances" $
     context "the Semigroup instance" $ do
       it "the resulting template inherits focus of the left one" $
@@ -26,6 +26,15 @@ spec =
             [ ("c", [TextBlock "foo"])
             , ("d", [TextBlock "bar"])
             , ("e", [TextBlock "baz"]) ]
+  describe "showKey" $ do
+    context "when the key has no elements in it" $
+      it "is rendered correctly" $
+        showKey (Key []) `shouldBe` "<implicit>"
+    context "when the key has some elements" $
+      it "is rendered correctly" $ do
+        showKey (Key ["boo"]) `shouldBe` "boo"
+        showKey (Key ["foo","bar"]) `shouldBe` "foo.bar"
+        showKey (Key ["baz","baz","quux"]) `shouldBe` "baz.baz.quux"
 
 templateA :: Template
 templateA = Template "a" $ M.fromList
