@@ -1,6 +1,6 @@
 -- |
 -- Module      :  Text.Mustache.Type
--- Copyright   :  © 2016 Stack Buliders
+-- Copyright   :  © 2016–2017 Stack Buliders
 -- License     :  BSD 3 clause
 --
 -- Maintainer  :  Mark Karpov <markkarpov@openmailbox.org>

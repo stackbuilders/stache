@@ -1,6 +1,6 @@
 -- |
 -- Module      :  Text.Mustache.Parser
--- Copyright   :  © 2016 Stack Builders
+-- Copyright   :  © 2016–2017 Stack Builders
 -- License     :  BSD 3 clause
 --
 -- Maintainer  :  Mark Karpov <markkarpov@openmailbox.org>

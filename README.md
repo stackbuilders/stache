@@ -77,6 +77,6 @@ helpful:
 
 ## License
 
-Copyright © 2016 Stack Builders
+Copyright © 2016–2017 Stack Builders
 
 Distributed under BSD 3 clause license.
