@@ -2,6 +2,11 @@ language: c
 
 sudo: false
 
+cache:
+  directories:
+    - ~/.ghc
+    - ~/.cabal
+
 matrix:
   include:
     - env: CABALVER=1.24 GHCVER=7.8.4
@@ -25,6 +30,7 @@ install:
     "7.8.4") cabal install --only-dependencies ;;
     *)       cabal install --only-dependencies --enable-tests ;;
    esac
+ - cabal install hpc-coveralls
 
 script:
  - case "$CABALVER" in
@@ -40,7 +46,6 @@ script:
  - cabal haddock | grep "100%" | wc -l | grep "6"
 
 after_script:
- - cabal install hpc-coveralls
  - export PATH=~/.cabal/bin:$PATH
  - hpc-coveralls --coverage-mode=StrictlyFullLines
                  --exclude-dir=tests
