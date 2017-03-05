@@ -1,3 +1,7 @@
+## Stache 0.2.1
+
+* Made TH parse errors nicer.
+
 ## Stache 0.2.0
 
 * Breaking change: the `renderMustache` function will throw an exception

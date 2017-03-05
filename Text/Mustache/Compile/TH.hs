@@ -26,13 +26,13 @@ module Text.Mustache.Compile.TH
   , mustache )
 where
 
+import Control.Exception (Exception(..))
 import Control.Monad.Catch (try)
 import Data.Text.Lazy (Text)
 import Data.Typeable (cast)
 import Language.Haskell.TH hiding (Dec)
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Language.Haskell.TH.Syntax (lift)
-import Text.Megaparsec hiding (try)
 import Text.Mustache.Type
 import qualified Data.Text             as T
 import qualified Data.Text.Lazy        as TL
@@ -83,7 +83,8 @@ compileMustacheText
   -> Text              -- ^ The template to compile
   -> Q Exp
 compileMustacheText pname text =
-  handleEither (C.compileMustacheText pname text)
+  (handleEither . either (Left . MustacheParserException) Right)
+  (C.compileMustacheText pname text)
 
 -- | Compile Mustache using QuasiQuoter. Usage:
 --
@@ -109,11 +110,25 @@ mustache = QuasiQuoter
 -- | Given an 'Either' result return 'Right' and signal pretty-printed error
 -- if we have a 'Left'.
 
-handleEither :: Either (ParseError Char Dec) Template -> Q Exp
+handleEither :: Either MustacheException Template -> Q Exp
 handleEither val =
   case val of
-    Left err -> fail (parseErrorPretty err)
+    Left err -> fail . indentNicely $
+#if MIN_VERSION_base(4,8,0)
+      displayException err
+#else
+      show err
+#endif
     Right template -> dataToExpQ (fmap liftText . cast) template
+  where
+    -- NOTE Since the feature requires GHC 8 anyway, we follow indentation
+    -- style of that version of compiler. This makes it look consistent with
+    -- other error messages and allows Emacs and similar tools to parse the
+    -- errors correctly.
+    indentNicely x' =
+      case lines x' of
+        []     -> ""
+        (x:xs) -> unlines (x : fmap (replicate 8 ' ' ++) xs)
 
 -- | Lift strict 'T.Text' to 'Q' 'Exp'.
 
