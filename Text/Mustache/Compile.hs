@@ -15,6 +15,7 @@
 
 module Text.Mustache.Compile
   ( compileMustacheDir
+  , getMustacheFilesInDir
   , compileMustacheFile
   , compileMustacheText )
 where
@@ -47,14 +48,26 @@ compileMustacheDir :: (MonadIO m, MonadThrow m)
   -> FilePath          -- ^ Directory with templates
   -> m Template        -- ^ The resulting template
 compileMustacheDir pname path =
-  liftIO (getDirectoryContents path) >>=
-  filterM isMustacheFile . liftM (F.combine (F.takeDirectory path)) >>=
+  getMustacheFilesInDir path >>=
   liftM selectKey . foldM f (Template undefined M.empty)
   where
     selectKey t = t { templateActual = pname }
     f (Template _ old) fp = do
       Template _ new <- compileMustacheFile fp
       return (Template undefined (M.union new old))
+
+-- | Return a list of templates found in given directory. The returned paths
+-- are absolute.
+--
+-- @since 0.2.2
+
+getMustacheFilesInDir :: MonadIO m
+  => FilePath          -- ^ Directory with templates
+  -> m [FilePath]
+getMustacheFilesInDir path =
+  liftIO (getDirectoryContents path) >>=
+  filterM isMustacheFile . fmap (F.combine path) >>=
+  mapM (liftIO . makeAbsolute)
 
 -- | Compile single Mustache template and select it.
 --
@@ -82,7 +95,7 @@ compileMustacheText pname txt =
 ----------------------------------------------------------------------------
 -- Helpers
 
--- | Check if given 'FilePath' point to a mustache file.
+-- | Check if given 'FilePath' points to a mustache file.
 
 isMustacheFile :: MonadIO m => FilePath -> m Bool
 isMustacheFile path = do
@@ -94,7 +107,6 @@ isMustacheFile path = do
 
 pathToPName :: FilePath -> PName
 pathToPName = PName . T.pack . F.takeBaseName
-{-# INLINE pathToPName #-}
 
 -- | Throw 'MustacheException' if argument is 'Left' or return the result
 -- inside 'Right'.
@@ -103,4 +115,3 @@ withException :: MonadThrow m
   => Either (ParseError Char Dec) Template -- ^ Value to process
   -> m Template        -- ^ The result
 withException = either (throwM . MustacheParserException) return
-{-# INLINE withException #-}

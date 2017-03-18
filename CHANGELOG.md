@@ -1,3 +1,10 @@
+## Stache 0.2.2
+
+* Add the `getMustacheFilesInDir` function.
+
+* Make TH helpers `compileMustacheDir` and `compileMustacheFile` detect
+  changes in the templates and force recompilation.
+
 ## Stache 0.2.1
 
 * Made TH parse errors nicer.

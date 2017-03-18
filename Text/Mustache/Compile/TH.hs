@@ -32,7 +32,8 @@ import Data.Text.Lazy (Text)
 import Data.Typeable (cast)
 import Language.Haskell.TH hiding (Dec)
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
-import Language.Haskell.TH.Syntax (lift)
+import Language.Haskell.TH.Syntax (lift, addDependentFile)
+import System.Directory
 import Text.Mustache.Type
 import qualified Data.Text             as T
 import qualified Data.Text.Lazy        as TL
@@ -60,7 +61,8 @@ compileMustacheDir
   :: PName             -- ^ Which template to select after compiling
   -> FilePath          -- ^ Directory with templates
   -> Q Exp             -- ^ The resulting template
-compileMustacheDir pname path =
+compileMustacheDir pname path = do
+  runIO (C.getMustacheFilesInDir path) >>= mapM_ addDependentFile
   (runIO . try) (C.compileMustacheDir pname path) >>= handleEither
 
 -- | Compile single Mustache template and select it.
@@ -70,7 +72,8 @@ compileMustacheDir pname path =
 compileMustacheFile
   :: FilePath          -- ^ Location of the file
   -> Q Exp
-compileMustacheFile path =
+compileMustacheFile path = do
+  runIO (makeAbsolute path) >>= addDependentFile
   (runIO . try) (C.compileMustacheFile path) >>= handleEither
 
 -- | Compile Mustache template from 'Text' value. The cache will contain
