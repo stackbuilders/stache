@@ -30,11 +30,11 @@ import qualified Text.Megaparsec.Lexer as L
 ----------------------------------------------------------------------------
 -- Parser
 
--- | Parse given Mustache template.
+-- | Parse a given Mustache template.
 
 parseMustache
   :: FilePath
-     -- ^ Location of file to parse
+     -- ^ Location of the file to parse
   -> Text
      -- ^ File contents (Mustache template)
   -> Either (ParseError Char Dec) [Node]

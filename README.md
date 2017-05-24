@@ -8,28 +8,36 @@
 [![Coverage Status](https://coveralls.io/repos/github/stackbuilders/stache/badge.svg?branch=master)](https://coveralls.io/github/stackbuilders/stache?branch=master)
 
 This is a Haskell implementation of Mustache templates. The implementation
-conforms to the version 1.1.3 of official [Mustache specification]
-(https://github.com/mustache/spec). It is extremely simple and
-straightforward to use with minimal but complete API — three functions to
-compile templates (from directory, from file, and from lazy text) and one to
-render them.
+conforms to the version 1.1.3 of the
+official [Mustache specification](https://github.com/mustache/spec). It is
+extremely simple and straightforward to use with minimal but complete
+API—three functions to compile templates (from directory, from file, and
+from lazy text) and one to render them.
 
 The implementation uses the Megaparsec parsing library to parse the
 templates which results in superior quality of error messages.
 
 For rendering you only need to create Aeson's `Value` where you put the data
 to interpolate. Since the library re-uses Aeson's instances and most data
-types in Haskell ecosystem are instances of classes like
-`Data.Aeson.ToJSON`, the whole process is very simple for end user.
+types in the Haskell ecosystem are instances of classes like
+`Data.Aeson.ToJSON`, the whole process is very simple for the end user.
 
 Template Haskell helpers for compilation of templates at compile time are
-available in the `Text.Mustache.Compile.TH` module. The helpers are
-currently available only for GHC 8 users though.
+available in the `Text.Mustache.Compile.TH` module. The helpers currently
+work only with GHC 8 and later.
 
 One feature that is not currently supported is lambdas. The feature is
 marked as optional in the spec and can be emulated via processing of parsed
 template representation. The decision to drop lambdas is intentional, for
 the sake of simplicity and better integration with Aeson.
+
+**NOTE**: Beginning from the version 0.2.0, `renderMustache` throws
+exceptions when referenced key is not provided. Strictly speaking, this is
+against the spec, but we must remember that the spec was written with
+dynamically typed languages like Ruby or JavaScript in mind. Missing key in
+95% of cases is a programmer's mistake and it should be reported (should
+fail “loudly”). If presence of a value is conditional, use `Maybe` (as you
+should in Haskell).
 
 ## Quick start
 

@@ -47,7 +47,7 @@ import Control.Applicative
 -- The rendering monad
 
 -- | Synonym for the monad we use for rendering. It allows to share context
--- and accumulate the result as 'B.Builder' data which is then turned into
+-- and accumulate the result as 'B.Builder' data which is then turned into a
 -- lazy 'TL.Text'.
 
 type Render a = ReaderT RenderContext (Writer B.Builder) a
@@ -71,7 +71,8 @@ data RenderContext = RenderContext
 -- As of version 0.2.0, if referenced values are missing (which almost
 -- always indicates some sort of mistake), 'MustacheRenderException' will be
 -- thrown. The included 'Key' will indicate full path to missing value and
--- 'PName' will contain the name of active partial.
+-- 'PName' will contain the name of active partial. If presence of a key in
+-- conditional, use 'Maybe'.
 
 renderMustache :: Template -> Value -> TL.Text
 renderMustache t =
@@ -202,7 +203,7 @@ simpleLookup
   :: Bool
      -- ^ At least one part of the path matched, in this case we are
      -- “committed” to this lookup and cannot say “there is nothing, try
-     -- other level”. This is necessary to pass the “Dotted Names — Context
+     -- other level”. This is necessary to pass the “Dotted Names—Context
      -- Precedence” test from the “interpolation.yml” spec.
   -> Key               -- ^ The key to lookup
   -> Value             -- ^ Source value
@@ -233,7 +234,7 @@ addToLocalContext v =
 ----------------------------------------------------------------------------
 -- Helpers
 
--- | Add two 'Maybe' 'Pos' values together.
+-- | Add two @'Maybe' 'Pos'@ values together.
 
 addIndents :: Maybe Pos -> Maybe Pos -> Maybe Pos
 addIndents Nothing  Nothing  = Nothing
@@ -242,7 +243,7 @@ addIndents (Just x) Nothing  = Just x
 addIndents (Just x) (Just y) = Just (x S.<> y)
 {-# INLINE addIndents #-}
 
--- | Build intentation of specified length by repeating the space character.
+-- | Build indentation of specified length by repeating the space character.
 
 buildIndent :: Maybe Pos -> Text
 buildIndent Nothing = ""

@@ -7,7 +7,7 @@
 -- Stability   :  experimental
 -- Portability :  portable
 --
--- Types used by the package. You don't usually need to import the module,
+-- Types used in the package. You don't usually need to import the module,
 -- because "Text.Mustache" re-exports everything you may need, import that
 -- module instead.
 
@@ -75,9 +75,9 @@ data Node
 --
 -- The representation is the following:
 --
---     * @[]@ — empty list means implicit iterators;
---     * @[text]@ — single key is a normal identifier;
---     * @[text1, text2]@ — multiple keys represent dotted names.
+--     * @[]@—empty list means implicit iterators;
+--     * @[text]@—single key is a normal identifier;
+--     * @[text1, text2]@—multiple keys represent dotted names.
 
 newtype Key = Key { unKey :: [Text] }
   deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Typeable, Generic)
@@ -104,8 +104,8 @@ instance IsString PName where
 
 instance NFData PName
 
--- | Exception that is thrown when parsing of a template has failed or
--- referenced values were not provided.
+-- | Exception that is thrown when parsing of a template fails or referenced
+-- values are not provided.
 
 data MustacheException
   = MustacheParserException (ParseError Char Dec)

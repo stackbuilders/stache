@@ -33,11 +33,11 @@ import qualified Data.Text.Lazy.IO as TL
 import qualified System.FilePath   as F
 
 #if !MIN_VERSION_base(4,8,0)
-import Control.Applicative ((<$>))
+import Control.Applicative
 #endif
 
 -- | Compile all templates in specified directory and select one. Template
--- files should have extension @mustache@, (e.g. @foo.mustache@) to be
+-- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
 -- recognized. This function /does not/ scan the directory recursively.
 --
 -- The action can throw the same exceptions as 'getDirectoryContents', and
@@ -69,7 +69,7 @@ getMustacheFilesInDir path =
   filterM isMustacheFile . fmap (F.combine path) >>=
   mapM (liftIO . makeAbsolute)
 
--- | Compile single Mustache template and select it.
+-- | Compile a single Mustache template and select it.
 --
 -- The action can throw the same exceptions as 'T.readFile'.
 
@@ -95,7 +95,7 @@ compileMustacheText pname txt =
 ----------------------------------------------------------------------------
 -- Helpers
 
--- | Check if given 'FilePath' points to a mustache file.
+-- | Check if a given 'FilePath' points to a mustache file.
 
 isMustacheFile :: MonadIO m => FilePath -> m Bool
 isMustacheFile path = do

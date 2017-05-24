@@ -52,7 +52,7 @@ dataToExpQ _ _ = fail "The feature requires at least GHC 8 to work"
 #endif
 
 -- | Compile all templates in specified directory and select one. Template
--- files should have extension @mustache@, (e.g. @foo.mustache@) to be
+-- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
 -- recognized. This function /does not/ scan the directory recursively.
 --
 -- This version compiles the templates at compile time.
@@ -98,8 +98,8 @@ compileMustacheText pname text =
 -- > foo = [mustache|This is my inline {{ template }}.|]
 --
 -- Name of created partial is set to @"quasi-quoted"@. You can extend cache
--- of 'Template' created this way using 'mappend' and so work with partials
--- as usual.
+-- of 'Template' created this way using @('Data.Semigroup.<>')@ and so work
+-- with partials as usual.
 --
 -- @since 0.1.7
 
@@ -124,10 +124,10 @@ handleEither val =
 #endif
     Right template -> dataToExpQ (fmap liftText . cast) template
   where
-    -- NOTE Since the feature requires GHC 8 anyway, we follow indentation
-    -- style of that version of compiler. This makes it look consistent with
-    -- other error messages and allows Emacs and similar tools to parse the
-    -- errors correctly.
+    -- NOTE Since the feature requires GHC 8 anyway, we follow the
+    -- indentation style of that version of compiler. This makes it look
+    -- consistent with other error messages and allows Emacs and similar
+    -- tools to parse the errors correctly.
     indentNicely x' =
       case lines x' of
         []     -> ""
