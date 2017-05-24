@@ -83,6 +83,13 @@ helpful:
 * The specification: https://github.com/mustache/spec
 * Stack Builders Stache tutorial: https://www.stackbuilders.com/tutorials/haskell/mustache-templates/
 
+## Contribution
+
+Issues, bugs, and questions may be reported in [the GitHub issue tracker for
+this project](https://github.com/stackbuilders/stache/issues).
+
+Pull requests are also welcome and will be reviewed quickly.
+
 ## License
 
 Copyright © 2016–2017 Stack Builders
