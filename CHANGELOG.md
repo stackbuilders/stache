@@ -1,3 +1,7 @@
+## Stache 0.3.0
+
+* Improved metedata and documentation.
+
 ## Stache 0.2.2
 
 * Add the `getMustacheFilesInDir` function.
