@@ -18,13 +18,13 @@ module Text.Mustache.Render
   ( renderMustache )
 where
 
-import Control.Exception (throw)
 import Control.Monad.Reader
 import Control.Monad.Writer.Lazy
 import Data.Aeson
 import Data.Foldable (asum)
 import Data.List (tails)
 import Data.List.NonEmpty (NonEmpty (..))
+import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Text.Megaparsec.Pos (Pos, unPos)
 import Text.Mustache.Type
@@ -67,12 +67,6 @@ data RenderContext = RenderContext
 
 -- | Render a Mustache 'Template' using Aeson's 'Value' to get actual values
 -- for interpolation.
---
--- As of version 0.2.0, if referenced values are missing (which almost
--- always indicates some sort of mistake), 'MustacheRenderException' will be
--- thrown. The included 'Key' will indicate full path to missing value and
--- 'PName' will contain the name of active partial. If presence of a key in
--- conditional, use 'Maybe'.
 
 renderMustache :: Template -> Value -> TL.Text
 renderMustache t =
@@ -188,13 +182,10 @@ renderMany f (n:ns) = do
 lookupKey :: Key -> Render Value
 lookupKey (Key []) = NE.head <$> asks rcContext
 lookupKey k = do
-  v     <- asks rcContext
-  p     <- asks rcPrefix
-  pname <- asks (templateActual . rcTemplate)
+  v <- asks rcContext
+  p <- asks rcPrefix
   let f x = asum (simpleLookup False (x <> k) <$> v)
-  case asum (fmap (f . Key) . reverse . tails $ unKey p) of
-    Nothing -> throw (MustacheRenderException pname (p <> k))
-    Just  r -> return r
+  (return . fromMaybe Null . asum) (fmap (f . Key) . reverse . tails $ unKey p)
 
 -- | Lookup a 'Value' by traversing another 'Value' using given 'Key' as
 -- “path”.

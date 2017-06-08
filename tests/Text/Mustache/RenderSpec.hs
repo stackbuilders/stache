@@ -6,7 +6,6 @@ module Text.Mustache.RenderSpec
   , spec )
 where
 
-import Control.Exception (evaluate)
 import Data.Aeson (object, KeyValue (..), Value (..))
 import Data.Text (Text)
 import Test.Hspec
@@ -41,13 +40,8 @@ spec = describe "renderMustache" $ do
   context "when rendering a section" $ do
     let nodes = [Section (key "foo") [UnescapedVar (key "bar"), TextBlock "*"]]
     context "when the key is not present" $
-      it "throws the correct exception" $
-        evaluate (r nodes (object [])) `shouldThrow`
-          (== MustacheRenderException "test" (key "foo"))
-    context "when the key is not present inside a section" $
-      it "throws the correct exception" $
-        evaluate (r nodes (object ["foo" .= ([1] :: [Int])])) `shouldThrow`
-          (== MustacheRenderException "test" (Key ["foo","bar"]))
+      it "renders nothing" $
+        r nodes (object []) `shouldBe` ""
     context "when the key is present" $ do
       context "when the key is a “false” value" $ do
         it "skips the Null value" $
@@ -103,9 +97,8 @@ spec = describe "renderMustache" $ do
   context "when rendering an inverted section" $ do
     let nodes = [InvertedSection (key "foo") [TextBlock "Here!"]]
     context "when the key is not present" $
-      it "throws the correct exception" $
-        evaluate (r nodes (object [])) `shouldThrow`
-          (== MustacheRenderException "test" (key "foo"))
+      it "renders the inverse section" $
+        r nodes (object []) `shouldBe` "Here!"
     context "when the key is present" $ do
       context "when the key is a “false” value" $ do
         it "renders with Null value" $
