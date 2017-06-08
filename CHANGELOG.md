@@ -1,6 +1,11 @@
 ## Stache 0.3.0
 
-* Improved metedata and documentation.
+* Improved metadata and documentation.
+
+* Breaking change: the `renderMustache` function does not throw exceptions
+  when referenced key is not provided as per the spec. This is the behaviour
+  we had before 0.2.0, and it played better with the rest of Mustache.
+  Correspondingly, `MustacheRenderException` was removed.
 
 ## Stache 0.2.2
 

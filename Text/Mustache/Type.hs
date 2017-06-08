@@ -112,20 +112,11 @@ data MustacheException
     -- ^ Template parser has failed. This contains the parse error.
     --
     -- /Before version 0.2.0 it was called 'MustacheException'./
-  | MustacheRenderException PName Key
-    -- ^ A referenced value was not provided. The exception provides info
-    -- about partial in which the issue happened 'PName' and name of the
-    -- missing key 'Key'.
-    --
-    -- @since 0.2.0
   deriving (Eq, Show, Typeable, Generic)
 
 #if MIN_VERSION_base(4,8,0)
 instance Exception MustacheException where
   displayException (MustacheParserException e) = parseErrorPretty e
-  displayException (MustacheRenderException pname key) =
-    "Referenced value was not provided in partial \"" ++ T.unpack (unPName pname) ++
-    "\", key: " ++ T.unpack (showKey key)
 #else
 instance Exception MustacheException
 #endif
