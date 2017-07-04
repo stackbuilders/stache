@@ -11,6 +11,8 @@
 -- import the module, because "Text.Mustache" re-exports everything you may
 -- need, import that module instead.
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Text.Mustache.Parser
   ( parseMustache )
 where
@@ -18,14 +20,16 @@ where
 import Control.Applicative
 import Control.Monad
 import Control.Monad.State.Strict
-import Data.Char (isSpace)
-import Data.List (intercalate)
+import Data.Char (isSpace, isAlphaNum)
 import Data.Maybe (catMaybes)
-import Data.Text.Lazy (Text)
+import Data.Semigroup ((<>))
+import Data.Text (Text)
+import Data.Void
 import Text.Megaparsec
+import Text.Megaparsec.Char
 import Text.Mustache.Type
-import qualified Data.Text             as T
-import qualified Text.Megaparsec.Lexer as L
+import qualified Data.Text                  as T
+import qualified Text.Megaparsec.Char.Lexer as L
 
 ----------------------------------------------------------------------------
 -- Parser
@@ -37,7 +41,7 @@ parseMustache
      -- ^ Location of the file to parse
   -> Text
      -- ^ File contents (Mustache template)
-  -> Either (ParseError Char Dec) [Node]
+  -> Either (ParseError Char Void) [Node]
      -- ^ Parsed nodes or parse error
 parseMustache = parse $
   evalStateT (pMustache eof) (Delimiters "{{" "}}")
@@ -77,11 +81,11 @@ pUnescapedSpecial :: Parser Node
 pUnescapedSpecial = do
   start <- gets openingDel
   end   <- gets closingDel
-  between (symbol $ start ++ "{") (string $ "}" ++ end) $
+  between (symbol $ start <> "{") (string $ "}" <> end) $
     UnescapedVar <$> pKey
 {-# INLINE pUnescapedSpecial #-}
 
-pSection :: String -> (Key -> [Node] -> Node) -> Parser Node
+pSection :: Text -> (Key -> [Node] -> Node) -> Parser Node
 pSection suffix f = do
   key   <- withStandalone (pTag suffix)
   nodes <- (pMustache . withStandalone . pClosingTag) key
@@ -100,7 +104,7 @@ pComment :: Parser ()
 pComment = void $ do
   start <- gets openingDel
   end   <- gets closingDel
-  (void . symbol) (start ++ "!")
+  (void . symbol) (start <> "!")
   manyTill anyChar (string end)
 {-# INLINE pComment #-}
 
@@ -108,10 +112,10 @@ pSetDelimiters :: Parser ()
 pSetDelimiters = void $ do
   start <- gets openingDel
   end   <- gets closingDel
-  (void . symbol) (start ++ "=")
+  (void . symbol) (start <> "=")
   start' <- pDelimiter <* scn
   end'   <- pDelimiter <* scn
-  (void . string) ("=" ++ end)
+  (void . string) ("=" <> end)
   put (Delimiters start' end')
 {-# INLINE pSetDelimiters #-}
 
@@ -127,38 +131,39 @@ pStandalone :: Parser a -> Parser a
 pStandalone p = pBol *> try (between sc (sc <* (void eol <|> eof)) p)
 {-# INLINE pStandalone #-}
 
-pTag :: String -> Parser Key
+pTag :: Text -> Parser Key
 pTag suffix = do
   start <- gets openingDel
   end   <- gets closingDel
-  between (symbol $ start ++ suffix) (string end) pKey
+  between (symbol $ start <> suffix) (string end) pKey
 {-# INLINE pTag #-}
 
 pClosingTag :: Key -> Parser ()
 pClosingTag key = do
   start <- gets openingDel
   end   <- gets closingDel
-  let str = keyToString key
-  void $ between (symbol $ start ++ "/") (string end) (symbol str)
+  let str = keyToText key
+  void $ between (symbol $ start <> "/") (string end) (symbol str)
 {-# INLINE pClosingTag #-}
 
 pKey :: Parser Key
 pKey = (fmap Key . lexeme . label "key") (implicit <|> other)
   where
     implicit = [] <$ char '.'
-    other    = sepBy1 (T.pack <$> some ch) (char '.')
-    ch       = alphaNumChar <|> oneOf "-_"
+    other    = sepBy1 (takeWhile1P (Just lbl) f) (char '.')
+    lbl      = "alphanumeric char or '-' or '_'"
+    f x      = isAlphaNum x || x == '-' || x == '_'
 {-# INLINE pKey #-}
 
-pDelimiter :: Parser String
-pDelimiter = some (satisfy delChar) <?> "delimiter"
+pDelimiter :: Parser Text
+pDelimiter = takeWhile1P (Just "delimiter char") delChar <?> "delimiter"
   where delChar x = not (isSpace x) && x /= '='
 {-# INLINE pDelimiter #-}
 
 pBol :: Parser ()
 pBol = do
   level <- L.indentLevel
-  unless (level == unsafePos 1) empty
+  unless (level == pos1) empty
 {-# INLINE pBol #-}
 
 ----------------------------------------------------------------------------
@@ -166,35 +171,37 @@ pBol = do
 
 -- | Type of Mustache parser monad stack.
 
-type Parser = StateT Delimiters (Parsec Dec Text)
+type Parser = StateT Delimiters (Parsec Void Text)
 
 -- | State used in Mustache parser. It includes currently set opening and
 -- closing delimiters.
 
 data Delimiters = Delimiters
-  { openingDel :: String
-  , closingDel :: String }
+  { openingDel :: Text
+  , closingDel :: Text }
 
 ----------------------------------------------------------------------------
 -- Lexer helpers and other
 
 scn :: Parser ()
-scn = L.space (void spaceChar) empty empty
+scn = L.space space1 empty empty
 {-# INLINE scn #-}
 
 sc :: Parser ()
-sc = L.space (void $ oneOf " \t") empty empty
+sc = L.space (void $ takeWhile1P Nothing f) empty empty
+  where
+    f x = x == ' ' || x == '\t'
 {-# INLINE sc #-}
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme scn
 {-# INLINE lexeme #-}
 
-symbol :: String -> Parser String
+symbol :: Text -> Parser Text
 symbol = L.symbol scn
 {-# INLINE symbol #-}
 
-keyToString :: Key -> String
-keyToString (Key []) = "."
-keyToString (Key ks) = intercalate "." (T.unpack <$> ks)
-{-# INLINE keyToString #-}
+keyToText :: Key -> Text
+keyToText (Key []) = "."
+keyToText (Key ks) = T.intercalate "." ks
+{-# INLINE keyToText #-}

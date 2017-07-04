@@ -1,4 +1,4 @@
-## Stache 0.3.0
+## Stache 1.0.0
 
 * Improved metadata and documentation.
 
@@ -6,6 +6,13 @@
   when referenced key is not provided as per the spec. This is the behaviour
   we had before 0.2.0, and it played better with the rest of Mustache.
   Correspondingly, `MustacheRenderException` was removed.
+
+* Stache now uses Megaparsec 6 for parsing.
+
+* `MustacheException` now includes original input as `Text`.
+
+* `compileMustacheText` and `parseMustache` now accept strict `Text` instead
+  of lazy `Text`.
 
 ## Stache 0.2.2
 

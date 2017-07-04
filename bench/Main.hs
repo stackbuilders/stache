@@ -13,7 +13,7 @@ import Text.Mustache.Compile
 import Text.Mustache.Parser
 import Text.Mustache.Render
 import Text.Mustache.Type
-import qualified Data.Text.Lazy.IO as T
+import qualified Data.Text.IO as T
 
 ----------------------------------------------------------------------------
 -- Benchmarks
