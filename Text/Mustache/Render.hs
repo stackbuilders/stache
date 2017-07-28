@@ -19,7 +19,7 @@ module Text.Mustache.Render
 where
 
 import Control.Monad.Reader
-import Control.Monad.Writer.Lazy
+import Control.Monad.Writer.Strict
 import Data.Aeson
 import Data.Foldable (asum)
 import Data.List (tails)

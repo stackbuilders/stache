@@ -14,6 +14,8 @@
 * `compileMustacheText` and `parseMustache` now accept strict `Text` instead
   of lazy `Text`.
 
+* Minor improvement in rendering speed.
+
 ## Stache 0.2.2
 
 * Add the `getMustacheFilesInDir` function.
