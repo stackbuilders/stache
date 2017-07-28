@@ -16,6 +16,8 @@
 
 * Minor improvement in rendering speed.
 
+* Stop depending on `exceptions` and drop `MonadThrow` constraints.
+
 ## Stache 0.2.2
 
 * Add the `getMustacheFilesInDir` function.

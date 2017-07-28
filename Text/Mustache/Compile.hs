@@ -20,7 +20,7 @@ module Text.Mustache.Compile
   , compileMustacheText )
 where
 
-import Control.Monad.Catch (MonadThrow (..))
+import Control.Exception
 import Control.Monad.Except
 import Data.Text (Text)
 import Data.Void
@@ -44,7 +44,7 @@ import Control.Applicative
 -- The action can throw the same exceptions as 'getDirectoryContents', and
 -- 'T.readFile'.
 
-compileMustacheDir :: (MonadIO m, MonadThrow m)
+compileMustacheDir :: MonadIO m
   => PName             -- ^ Which template to select after compiling
   -> FilePath          -- ^ Directory with templates
   -> m Template        -- ^ The resulting template
@@ -65,20 +65,20 @@ compileMustacheDir pname path =
 getMustacheFilesInDir :: MonadIO m
   => FilePath          -- ^ Directory with templates
   -> m [FilePath]
-getMustacheFilesInDir path =
-  liftIO (getDirectoryContents path) >>=
+getMustacheFilesInDir path = liftIO $
+  getDirectoryContents path >>=
   filterM isMustacheFile . fmap (F.combine path) >>=
-  mapM (liftIO . makeAbsolute)
+  mapM makeAbsolute
 
 -- | Compile a single Mustache template and select it.
 --
 -- The action can throw the same exceptions as 'T.readFile'.
 
-compileMustacheFile :: (MonadIO m, MonadThrow m)
+compileMustacheFile :: MonadIO m
   => FilePath          -- ^ Location of the file
   -> m Template
-compileMustacheFile path = do
-  input <- liftIO (T.readFile path)
+compileMustacheFile path = liftIO $ do
+  input <- T.readFile path
   withException input (compile input)
   where
     pname = pathToPName path
@@ -99,9 +99,9 @@ compileMustacheText pname txt =
 
 -- | Check if a given 'FilePath' points to a mustache file.
 
-isMustacheFile :: MonadIO m => FilePath -> m Bool
+isMustacheFile :: FilePath -> IO Bool
 isMustacheFile path = do
-  exists <- liftIO (doesFileExist path)
+  exists <- doesFileExist path
   let rightExtension = F.takeExtension path == ".mustache"
   return (exists && rightExtension)
 
@@ -113,8 +113,8 @@ pathToPName = PName . T.pack . F.takeBaseName
 -- | Throw 'MustacheException' if argument is 'Left' or return the result
 -- inside 'Right'.
 
-withException :: MonadThrow m
-  => Text              -- ^ Original input
+withException
+  :: Text              -- ^ Original input
   -> Either (ParseError Char Void) Template -- ^ Value to process
-  -> m Template        -- ^ The result
-withException input = either (throwM . MustacheParserException input) return
+  -> IO Template       -- ^ The result
+withException input = either (throwIO . MustacheParserException input) return

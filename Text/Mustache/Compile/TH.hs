@@ -26,8 +26,7 @@ module Text.Mustache.Compile.TH
   , mustache )
 where
 
-import Control.Exception (Exception(..))
-import Control.Monad.Catch (try)
+import Control.Exception
 import Data.Text (Text)
 import Data.Typeable (cast)
 import Language.Haskell.TH hiding (Dec)
