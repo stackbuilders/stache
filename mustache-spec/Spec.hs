@@ -38,9 +38,9 @@ data Test = Test
   { testName     :: String
   , testDesc     :: String
   , testData     :: Value
-  , testTemplate :: TL.Text
-  , testExpected :: TL.Text
-  , testPartials :: Map Text TL.Text
+  , testTemplate :: Text
+  , testExpected :: Text
+  , testPartials :: Map Text Text
   }
 
 instance FromJSON Test where
@@ -84,5 +84,5 @@ specData aspect bytes = describe aspect $ do
                   Left perr -> handleError perr >> undefined
                   Right ns  -> return (pname, ns)
               let ps2 = M.fromList ps1 `M.union` templateCache
-              renderMustache (Template templateActual ps2) testData
+              TL.toStrict (renderMustache (Template templateActual ps2) testData)
                 `shouldBe` testExpected

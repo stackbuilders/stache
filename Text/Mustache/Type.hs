@@ -34,6 +34,7 @@ import Data.Semigroup
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Typeable (Typeable)
+import Data.Void
 import GHC.Generics
 import Text.Megaparsec
 import qualified Data.Map  as M
@@ -108,7 +109,7 @@ instance NFData PName
 -- values are not provided.
 
 data MustacheException
-  = MustacheParserException (ParseError Char Dec)
+  = MustacheParserException Text (ParseError Char Void)
     -- ^ Template parser has failed. This contains the parse error.
     --
     -- /Before version 0.2.0 it was called 'MustacheException'./
@@ -116,7 +117,7 @@ data MustacheException
 
 #if MIN_VERSION_base(4,8,0)
 instance Exception MustacheException where
-  displayException (MustacheParserException e) = parseErrorPretty e
+  displayException (MustacheParserException s e) = parseErrorPretty' s e
 #else
 instance Exception MustacheException
 #endif

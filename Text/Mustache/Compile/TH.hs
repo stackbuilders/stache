@@ -28,7 +28,7 @@ where
 
 import Control.Exception (Exception(..))
 import Control.Monad.Catch (try)
-import Data.Text.Lazy (Text)
+import Data.Text (Text)
 import Data.Typeable (cast)
 import Language.Haskell.TH hiding (Dec)
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
@@ -36,7 +36,6 @@ import Language.Haskell.TH.Syntax (lift, addDependentFile)
 import System.Directory
 import Text.Mustache.Type
 import qualified Data.Text             as T
-import qualified Data.Text.Lazy        as TL
 import qualified Text.Mustache.Compile as C
 
 #if !MIN_VERSION_base(4,8,0)
@@ -86,7 +85,7 @@ compileMustacheText
   -> Text              -- ^ The template to compile
   -> Q Exp
 compileMustacheText pname text =
-  (handleEither . either (Left . MustacheParserException) Right)
+  (handleEither . either (Left . MustacheParserException text) Right)
   (C.compileMustacheText pname text)
 
 -- | Compile Mustache using QuasiQuoter. Usage:
@@ -105,7 +104,7 @@ compileMustacheText pname text =
 
 mustache :: QuasiQuoter
 mustache = QuasiQuoter
-  { quoteExp  = compileMustacheText "quasi-quoted" . TL.pack
+  { quoteExp  = compileMustacheText "quasi-quoted" . T.pack
   , quotePat  = undefined
   , quoteType = undefined
   , quoteDec  = undefined }
