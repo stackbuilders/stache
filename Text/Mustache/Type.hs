@@ -113,6 +113,8 @@ data MustacheException
     -- ^ Template parser has failed. This contains the parse error.
     --
     -- /Before version 0.2.0 it was called 'MustacheException'./
+    --
+    -- /The 'Text' field was added in version 1.0.0./
   deriving (Eq, Show, Typeable, Generic)
 
 #if MIN_VERSION_base(4,8,0)

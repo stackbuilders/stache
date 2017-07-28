@@ -14,8 +14,8 @@
 -- to compile templates (from directory, from file, and from lazy text) and
 -- one to render them.
 --
--- The implementation uses the Megaparsec parsing library to parse the
--- templates which results in superior quality of error messages.
+-- The implementation uses Megaparsec parsing library to parse the templates
+-- which results in superior quality of error messages.
 --
 -- For rendering you only need to create Aeson's 'Data.Aeson.Value' where
 -- you put the data to interpolate. Since the library re-uses Aeson's
