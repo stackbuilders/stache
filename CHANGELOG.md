@@ -1,3 +1,10 @@
+## Stache 1.1.0
+
+* Added `mustacheRenderW` that allows to render a `Template` collecting
+  warnings in the process. Also added the `MusthacheWarning` type
+  representing the warnings themselves and `displayMustacheWarning` to
+  pretty-print the warnings.
+
 ## Stache 1.0.0
 
 * Improved metadata and documentation.

@@ -23,7 +23,9 @@ module Text.Mustache.Type
   , Key (..)
   , showKey
   , PName (..)
-  , MustacheException (..) )
+  , MustacheException (..)
+  , MustacheWarning (..)
+  , displayMustacheWarning )
 where
 
 import Control.DeepSeq
@@ -123,3 +125,26 @@ instance Exception MustacheException where
 #else
 instance Exception MustacheException
 #endif
+
+-- | Warning that may be generated during rendering of a 'Template'.
+--
+-- @since 1.1.0
+
+data MustacheWarning
+  = MustacheVariableNotFound Key
+    -- ^ The template contained a variable for which there was no data
+    -- counterpart in the current context.
+  | MustacheDirectlyRenderedValue Key
+    -- ^ A complex value such as an 'Object' or 'Array' was directly
+    -- rendered into the template.
+  deriving (Eq, Show, Typeable, Generic)
+
+-- | Pretty-print a 'MustacheWarning'.
+--
+-- @since 1.1.0
+
+displayMustacheWarning :: MustacheWarning -> String
+displayMustacheWarning (MustacheVariableNotFound key) =
+  "Referenced value was not provided, key: " ++ T.unpack (showKey key)
+displayMustacheWarning (MustacheDirectlyRenderedValue key) =
+  "Complex value rendered as such, key: " ++ T.unpack (showKey key)

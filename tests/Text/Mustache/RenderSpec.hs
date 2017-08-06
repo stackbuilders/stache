@@ -23,7 +23,10 @@ main = hspec spec
 
 spec :: Spec
 spec = describe "renderMustache" $ do
-  let r ns value =
+  let w ns value =
+        let template = Template "test" (M.singleton "test" ns)
+        in fst (renderMustacheW template value)
+      r ns value =
         let template = Template "test" (M.singleton "test" ns)
         in renderMustache template value
       key = Key . pure
@@ -37,11 +40,22 @@ spec = describe "renderMustache" $ do
     r [UnescapedVar (key "foo")]
       (object ["foo" .= ("<html>&\"something\"</html>" :: Text)])
       `shouldBe` "<html>&\"something\"</html>"
+  context "when rendering a variable" $ do
+    context "when variable does not exist" $
+      it "generates correct warning" $
+        w [EscapedVar (key "foo")] (object []) `shouldBe`
+          [MustacheVariableNotFound (key "foo")]
+    context "when variable is not non-scalar" $
+      it "generates correct warning" $
+        w [EscapedVar (key "foo")] (object ["foo" .= object []]) `shouldBe`
+          [MustacheDirectlyRenderedValue (key "foo")]
   context "when rendering a section" $ do
     let nodes = [Section (key "foo") [UnescapedVar (key "bar"), TextBlock "*"]]
-    context "when the key is not present" $
+    context "when the key is not present" $ do
       it "renders nothing" $
         r nodes (object []) `shouldBe` ""
+      it "generates correct warning" $
+        w nodes (object []) `shouldBe` [MustacheVariableNotFound (key "foo")]
     context "when the key is present" $ do
       context "when the key is a “false” value" $ do
         it "skips the Null value" $
@@ -96,9 +110,11 @@ spec = describe "renderMustache" $ do
             `shouldBe` "x"
   context "when rendering an inverted section" $ do
     let nodes = [InvertedSection (key "foo") [TextBlock "Here!"]]
-    context "when the key is not present" $
+    context "when the key is not present" $ do
       it "renders the inverse section" $
         r nodes (object []) `shouldBe` "Here!"
+      it "generates correct warning" $
+        w nodes (object []) `shouldBe` [MustacheVariableNotFound (key "foo")]
     context "when the key is present" $ do
       context "when the key is a “false” value" $ do
         it "renders with Null value" $
