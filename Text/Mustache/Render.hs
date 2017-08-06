@@ -15,29 +15,29 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.Render
-  ( renderMustache )
+  ( renderMustache
+  , renderMustacheW )
 where
 
 import Control.Monad.Reader
-import Control.Monad.Writer.Strict
+import Control.Monad.State.Strict (State, modify', execState)
 import Data.Aeson
 import Data.Foldable (asum)
 import Data.List (tails)
 import Data.List.NonEmpty (NonEmpty (..))
-import Data.Maybe (fromMaybe)
+import Data.Semigroup ((<>))
 import Data.Text (Text)
 import Text.Megaparsec.Pos (Pos, unPos)
 import Text.Mustache.Type
-import qualified Data.ByteString.Lazy   as B
-import qualified Data.HashMap.Strict    as H
-import qualified Data.List.NonEmpty     as NE
-import qualified Data.Map               as M
-import qualified Data.Semigroup         as S
-import qualified Data.Text              as T
-import qualified Data.Text.Encoding     as T
-import qualified Data.Text.Lazy         as TL
-import qualified Data.Text.Lazy.Builder as B
-import qualified Data.Vector            as V
+import qualified Data.HashMap.Strict     as H
+import qualified Data.List.NonEmpty      as NE
+import qualified Data.Map                as M
+import qualified Data.Semigroup          as S
+import qualified Data.Text               as T
+import qualified Data.Text.Lazy          as TL
+import qualified Data.Text.Lazy.Builder  as B
+import qualified Data.Text.Lazy.Encoding as TL
+import qualified Data.Vector             as V
 
 #if !MIN_VERSION_base(4,8,0)
 import Control.Applicative
@@ -50,7 +50,9 @@ import Control.Applicative
 -- and accumulate the result as 'B.Builder' data which is then turned into a
 -- lazy 'TL.Text'.
 
-type Render a = ReaderT RenderContext (Writer B.Builder) a
+type Render a = ReaderT RenderContext (State S) a
+
+data S = S ([MustacheWarning] -> [MustacheWarning]) B.Builder
 
 -- | The render monad context.
 
@@ -69,7 +71,14 @@ data RenderContext = RenderContext
 -- for interpolation.
 
 renderMustache :: Template -> Value -> TL.Text
-renderMustache t =
+renderMustache t = snd . renderMustacheW t
+
+-- | Like 'renderMustache', but also returns a collection of warnings.
+--
+-- @since 1.1.0
+
+renderMustacheW :: Template -> Value -> ([MustacheWarning], TL.Text)
+renderMustacheW t =
   runRender (renderPartial (templateActual t) Nothing renderNode) t
 
 -- | Render a single 'Node'.
@@ -77,9 +86,9 @@ renderMustache t =
 renderNode :: Node -> Render ()
 renderNode (TextBlock txt) = outputIndented txt
 renderNode (EscapedVar k) =
-  lookupKey k >>= outputRaw . escapeHtml . renderValue
+  lookupKey k >>= renderValue k >>= outputRaw . escapeHtml
 renderNode (UnescapedVar k) =
-  lookupKey k >>= outputRaw . renderValue
+  lookupKey k >>= renderValue k >>= outputRaw
 renderNode (Section k ns) = do
   val <- lookupKey k
   enterSection k $
@@ -103,9 +112,10 @@ renderNode (Partial pname indent) =
 -- | Run 'Render' monad given template to render and a 'Value' to take
 -- values from.
 
-runRender :: Render a -> Template -> Value -> TL.Text
-runRender m t v = (B.toLazyText . execWriter) (runReaderT m rc)
+runRender :: Render a -> Template -> Value -> ([MustacheWarning], TL.Text)
+runRender m t v = (ws [], B.toLazyText b)
   where
+    S ws b = execState (runReaderT m rc) (S id mempty)
     rc = RenderContext
       { rcIndent   = Nothing
       , rcContext  = v :| []
@@ -117,7 +127,7 @@ runRender m t v = (B.toLazyText . execWriter) (runReaderT m rc)
 -- | Output a piece of strict 'Text'.
 
 outputRaw :: Text -> Render ()
-outputRaw = tell . B.fromText
+outputRaw = tellBuilder . B.fromText
 {-# INLINE outputRaw #-}
 
 -- | Output indentation consisting of appropriate number of spaces.
@@ -185,7 +195,11 @@ lookupKey k = do
   v <- asks rcContext
   p <- asks rcPrefix
   let f x = asum (simpleLookup False (x <> k) <$> v)
-  (return . fromMaybe Null . asum) (fmap (f . Key) . reverse . tails $ unKey p)
+  case asum (fmap (f . Key) . reverse . tails $ unKey p) of
+    Nothing ->
+      Null <$ tellWarning (MustacheVariableNotFound (p <> k))
+    Just r ->
+      return r
 
 -- | Lookup a 'Value' by traversing another 'Value' using given 'Key' as
 -- “path”.
@@ -225,6 +239,16 @@ addToLocalContext v =
 ----------------------------------------------------------------------------
 -- Helpers
 
+-- | Register a warning.
+
+tellWarning :: MustacheWarning -> Render ()
+tellWarning w = modify' $ \(S ws b) -> S (ws . (w:)) b
+
+-- | Register a piece of output.
+
+tellBuilder :: B.Builder -> Render ()
+tellBuilder b' = modify' $ \(S ws b) -> S ws (b <> b')
+
 -- | Add two @'Maybe' 'Pos'@ values together.
 
 addIndents :: Maybe Pos -> Maybe Pos -> Maybe Pos
@@ -254,10 +278,20 @@ isBlank _            = False
 
 -- | Render Aeson's 'Value' /without/ HTML escaping.
 
-renderValue :: Value -> Text
-renderValue Null         = ""
-renderValue (String str) = str
-renderValue value        = (T.decodeUtf8 . B.toStrict . encode) value
+renderValue :: Key -> Value -> Render Text
+renderValue k v =
+  case v of
+    Null       -> return ""
+    String str -> return str
+    Object _ -> do
+      tellWarning (MustacheDirectlyRenderedValue k)
+      render v
+    Array _ -> do
+      tellWarning (MustacheDirectlyRenderedValue k)
+      render v
+    _ -> render v
+  where
+    render = return . TL.toStrict . TL.decodeUtf8 . encode
 {-# INLINE renderValue #-}
 
 -- | Escape HTML represented as strict 'Text'.

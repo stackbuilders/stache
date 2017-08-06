@@ -35,6 +35,13 @@ spec = do
         showKey (Key ["boo"]) `shouldBe` "boo"
         showKey (Key ["foo","bar"]) `shouldBe` "foo.bar"
         showKey (Key ["baz","baz","quux"]) `shouldBe` "baz.baz.quux"
+  describe "displayMustacheWarning" $ do
+    it "renders “not found” warning correctly" $
+      displayMustacheWarning (MustacheVariableNotFound (Key ["foo"]))
+        `shouldBe` "Referenced value was not provided, key: foo"
+    it "renders “directly rendered value” warning correctly" $
+      displayMustacheWarning (MustacheDirectlyRenderedValue (Key ["foo"]))
+        `shouldBe` "Complex value rendered as such, key: foo"
 
 templateA :: Template
 templateA = Template "a" $ M.fromList
