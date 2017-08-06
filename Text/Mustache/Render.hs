@@ -75,7 +75,7 @@ renderMustache t = snd . renderMustacheW t
 
 -- | Like 'renderMustache', but also returns a collection of warnings.
 --
--- @since 1.1.0
+-- @since 1.1.1
 
 renderMustacheW :: Template -> Value -> ([MustacheWarning], TL.Text)
 renderMustacheW t =

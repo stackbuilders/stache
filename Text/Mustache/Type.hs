@@ -128,7 +128,7 @@ instance Exception MustacheException
 
 -- | Warning that may be generated during rendering of a 'Template'.
 --
--- @since 1.1.0
+-- @since 1.1.1
 
 data MustacheWarning
   = MustacheVariableNotFound Key
@@ -141,7 +141,7 @@ data MustacheWarning
 
 -- | Pretty-print a 'MustacheWarning'.
 --
--- @since 1.1.0
+-- @since 1.1.1
 
 displayMustacheWarning :: MustacheWarning -> String
 displayMustacheWarning (MustacheVariableNotFound key) =

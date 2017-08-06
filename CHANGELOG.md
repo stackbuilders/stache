@@ -1,3 +1,8 @@
+## Stache 1.1.1
+
+* Exported `mustacheRenderW`, `MustacheWarning`, and
+  `displayMustacheWarning` from `Text.Mustache`.
+
 ## Stache 1.1.0
 
 * Added `mustacheRenderW` that allows to render a `Template` collecting
