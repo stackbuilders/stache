@@ -25,7 +25,7 @@ import Data.Aeson
 import Data.Foldable (asum)
 import Data.List (tails)
 import Data.List.NonEmpty (NonEmpty (..))
-import Data.Semigroup ((<>))
+import Data.Monoid
 import Data.Text (Text)
 import Text.Megaparsec.Pos (Pos, unPos)
 import Text.Mustache.Type
