@@ -68,6 +68,7 @@ test-suite tests
                     , hspec-megaparsec >= 1.0  && < 2.0
                     , megaparsec       >= 6.0  && < 7.0
                     , stache
+                    , template-haskell >= 2.10 && < 2.13
                     , text             >= 1.2  && < 1.3
   other-modules:      Text.Mustache.Compile.THSpec
                     , Text.Mustache.ParserSpec
