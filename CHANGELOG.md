@@ -1,7 +1,8 @@
-## Stache 1.1.3
+## Stache 1.2.0
 
-* Added `compileMustacheDirCustom` that allows custom file extensions such as `.mush`
-* Updated to stackage 9.5, and Megaparsec 6.1.1
+* Added `compileMustacheDirCustom` that allows custom file extensions such as `.mush`.
+
+* Added `isMustacheFile`, a predicate for `.mustache` files.
 
 ## Stache 1.1.2
 

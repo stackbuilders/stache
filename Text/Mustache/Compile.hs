@@ -17,8 +17,10 @@ module Text.Mustache.Compile
   ( compileMustacheDir
   , compileMustacheDirCustom
   , getMustacheFilesInDir
+  , getTemplateFilesInDir
   , compileMustacheFile
-  , compileMustacheText )
+  , compileMustacheText
+  , isMustacheFile )
 where
 
 import Control.Exception
@@ -46,11 +48,28 @@ import Control.Applicative
 -- 'T.readFile'.
 
 compileMustacheDir :: MonadIO m
-  => PName             -- ^ Which template to select after compiling
-  -> FilePath          -- ^ Directory with templates
-  -> m Template        -- ^ The resulting template
-compileMustacheDir pname path =
-  getMustacheFilesInDir path "mustache" >>=
+  => PName              -- ^ Which template to select after compiling
+  -> FilePath           -- ^ Directory with templates
+  -> m Template         -- ^ The resulting template
+compileMustacheDir pname path = compileMustacheDirCustom isMustacheFile pname path
+
+-- | Compile all templates in specified directory and select one. Template
+-- files are identified via the passed predicate, the predicate operates
+-- on the relative filepath. This function /does not/ scan the
+-- directory recursively.
+--
+-- The action can throw the same exceptions as 'getDirectoryContents', and
+-- 'T.readFile'.
+--
+-- @since 1.1.3
+
+compileMustacheDirCustom :: MonadIO m
+  => (FilePath -> Bool) -- ^ Template selection predicate
+  -> PName              -- ^ Which template to select after compiling
+  -> FilePath           -- ^ Directory with templates
+  -> m Template         -- ^ The resulting template
+compileMustacheDirCustom predicate pname path =
+  getTemplateFilesInDir predicate path >>=
   liftM selectKey . foldM f (Template undefined M.empty)
   where
     selectKey t = t { templateActual = pname }
@@ -63,40 +82,17 @@ compileMustacheDir pname path =
 --
 -- @since 0.2.2
 
-compileMustacheDirCustom :: MonadIO m
-  => PName             -- ^ Which template to select after compiling
-  -> FilePath          -- ^ Directory with templates
-  -> String            -- ^ Extension of templates (Without dot)
-  -> m Template        -- ^ The resulting template
-compileMustacheDirCustom pname path ext =
-  getMustacheFilesInDir path ext >>=
-  liftM selectKey . foldM f (Template undefined M.empty)
-  where
-    selectKey t = t { templateActual = pname }
-    f (Template _ old) fp = do
-      Template _ new <- compileMustacheFile fp
-      return (Template undefined (M.union new old))
-
--- | Return a list of templates found in given directory. The returned paths
--- are absolute.
---
--- @since 1.1.3
-
 getMustacheFilesInDir :: MonadIO m
-  => FilePath          -- ^ Directory with templates
-  -> String            -- ^ Extension of templates (Without dot)
+  => FilePath           -- ^ Directory with templates
   -> m [FilePath]
-getMustacheFilesInDir path ext = liftIO $
-  getDirectoryContents path >>=
-  filterM (hasExtension ext) . fmap (F.combine path) >>=
-  mapM makeAbsolute
+getMustacheFilesInDir = getTemplateFilesInDir isMustacheFile
 
 -- | Compile a single Mustache template and select it.
 --
 -- The action can throw the same exceptions as 'T.readFile'.
 
 compileMustacheFile :: MonadIO m
-  => FilePath          -- ^ Location of the file
+  => FilePath           -- ^ Location of the file
   -> m Template
 compileMustacheFile path = liftIO $ do
   input <- T.readFile path
@@ -115,16 +111,32 @@ compileMustacheText
 compileMustacheText pname txt =
   Template pname . M.singleton pname <$> parseMustache "" txt
 
+-- | Default Mustache file predicate.
+
+isMustacheFile :: FilePath -> Bool
+isMustacheFile path = F.takeExtension path == ".mustache"
+
 ----------------------------------------------------------------------------
 -- Helpers
 
+-- | Return a list of templates found via a predicate in given directory.
+-- The returned paths are absolute.
+
+getTemplateFilesInDir :: MonadIO m
+  => (FilePath -> Bool) -- ^ Mustache file selection predicate
+  -> FilePath           -- ^ Directory with templates
+  -> m [FilePath]
+getTemplateFilesInDir predicate path = liftIO $
+  getDirectoryContents path >>=
+  filterM (templateFilter predicate) . fmap (F.combine path) >>=
+  mapM makeAbsolute
+
 -- | Check if a given 'FilePath' points to a mustache file.
 
-hasExtension :: FilePath -> String -> IO Bool
-hasExtension path ext = do
+templateFilter :: (FilePath -> Bool) -> FilePath -> IO Bool
+templateFilter predicate path = do
   exists <- doesFileExist path
-  let rightExtension = F.takeExtension path == ("." ++ ext)
-  return (exists && rightExtension)
+  return (exists && predicate path)
 
 -- | Build a 'PName' from given 'FilePath'.
 
@@ -135,7 +147,7 @@ pathToPName = PName . T.pack . F.takeBaseName
 -- inside 'Right'.
 
 withException
-  :: Text              -- ^ Original input
+  :: Text               -- ^ Original input
   -> Either (ParseError Char Void) Template -- ^ Value to process
-  -> IO Template       -- ^ The result
+  -> IO Template        -- ^ The result
 withException input = either (throwIO . MustacheParserException input) return
