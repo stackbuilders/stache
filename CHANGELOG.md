@@ -1,6 +1,6 @@
 ## Stache 1.2.0
 
-* Added `compileMustacheDirCustom` that allows custom file extensions such as `.mush`.
+* Added `compileMustacheDirCustom` that allows for a custom template predicate.
 
 * Added `isMustacheFile`, a predicate for `.mustache` files.
 
