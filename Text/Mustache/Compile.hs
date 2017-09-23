@@ -15,6 +15,7 @@
 
 module Text.Mustache.Compile
   ( compileMustacheDir
+  , compileMustacheDirCustom
   , getMustacheFilesInDir
   , compileMustacheFile
   , compileMustacheText )
