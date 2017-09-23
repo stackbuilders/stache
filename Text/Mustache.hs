@@ -82,6 +82,7 @@ module Text.Mustache
   , displayMustacheWarning
     -- * Compiling
   , compileMustacheDir
+  , compileMustacheDir'
   , compileMustacheFile
   , compileMustacheText
     -- * Rendering

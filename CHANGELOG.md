@@ -1,3 +1,9 @@
+## Stache 1.2.0
+
+* Added `compileMustacheDir'` and `getMusthacheFilesInDir'` that allow for a
+  custom template predicate. Also exposed `isMustacheFile` as the default
+  predicate used by functions like `compileMustacheDir`.
+
 ## Stache 1.1.2
 
 * Fixed compilation of the test suite with Cabal 2.0/GHC 8.2.1.

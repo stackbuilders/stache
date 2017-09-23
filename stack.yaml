@@ -1,6 +1,6 @@
-resolver: lts-9.0
+resolver: lts-9.6
 packages:
 - '.'
 extra-deps:
 - hspec-megaparsec-1.0.0
-- megaparsec-6.0.0
+- megaparsec-6.2.0

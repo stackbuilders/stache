@@ -21,6 +21,7 @@
 
 module Text.Mustache.Compile.TH
   ( compileMustacheDir
+  , compileMustacheDir'
   , compileMustacheFile
   , compileMustacheText
   , mustache )
@@ -54,13 +55,29 @@ dataToExpQ _ _ = fail "The feature requires at least GHC 8 to work"
 -- recognized. This function /does not/ scan the directory recursively.
 --
 -- This version compiles the templates at compile time.
+--
+-- > compileMustacheDir = compileMustacheDir' isMustacheFile
 
 compileMustacheDir
   :: PName             -- ^ Which template to select after compiling
   -> FilePath          -- ^ Directory with templates
   -> Q Exp             -- ^ The resulting template
-compileMustacheDir pname path = do
-  runIO (C.getMustacheFilesInDir path) >>= mapM_ addDependentFile
+compileMustacheDir = compileMustacheDir' C.isMustacheFile
+
+-- | The same as 'compileMustacheDir', but allows using a custom predicate
+-- for template selection.
+--
+-- This version compiles the templates at compile time.
+--
+-- @since 1.2.0
+
+compileMustacheDir'
+  :: (FilePath -> Bool) -- ^ Template selection predicate
+  -> PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> Q Exp             -- ^ The resulting template
+compileMustacheDir' predicate pname path = do
+  runIO (C.getMustacheFilesInDir' predicate path) >>= mapM_ addDependentFile
   (runIO . try) (C.compileMustacheDir pname path) >>= handleEither
 
 -- | Compile single Mustache template and select it.
