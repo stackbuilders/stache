@@ -1,3 +1,8 @@
+## Stache 1.1.3
+
+* Added `compileMustacheDirCustom` that allows custom file extensions such as `.mush`
+* Updated to stackage 9.5, and Megaparsec 6.1.1
+
 ## Stache 1.1.2
 
 * Fixed compilation of the test suite with Cabal 2.0/GHC 8.2.1.
