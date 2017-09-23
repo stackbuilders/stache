@@ -21,6 +21,7 @@
 
 module Text.Mustache.Compile.TH
   ( compileMustacheDir
+  , compileMustacheDirCustom
   , compileMustacheFile
   , compileMustacheText
   , mustache )
@@ -60,7 +61,22 @@ compileMustacheDir
   -> FilePath          -- ^ Directory with templates
   -> Q Exp             -- ^ The resulting template
 compileMustacheDir pname path = do
-  runIO (C.getMustacheFilesInDir path) >>= mapM_ addDependentFile
+  runIO (C.getMustacheFilesInDir path "mustache") >>= mapM_ addDependentFile
+  (runIO . try) (C.compileMustacheDir pname path) >>= handleEither
+
+-- | Compile all templates in specified directory and select one. Template
+-- files are identified via the passed extension, (e.g. @foo.<ext>@) to be
+-- recognized. This function /does not/ scan the directory recursively.
+--
+-- This version compiles the templates at compile time.
+
+compileMustacheDirCustom
+  :: PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> String            -- ^ Extension of templates (Without dot)
+  -> Q Exp             -- ^ The resulting template
+compileMustacheDirCustom pname path ext = do
+  runIO (C.getMustacheFilesInDir path ext) >>= mapM_ addDependentFile
   (runIO . try) (C.compileMustacheDir pname path) >>= handleEither
 
 -- | Compile single Mustache template and select it.

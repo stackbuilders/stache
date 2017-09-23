@@ -49,7 +49,7 @@ compileMustacheDir :: MonadIO m
   -> FilePath          -- ^ Directory with templates
   -> m Template        -- ^ The resulting template
 compileMustacheDir pname path =
-  getMustacheFilesInDir path >>=
+  getMustacheFilesInDir path "mustache" >>=
   liftM selectKey . foldM f (Template undefined M.empty)
   where
     selectKey t = t { templateActual = pname }
@@ -62,12 +62,32 @@ compileMustacheDir pname path =
 --
 -- @since 0.2.2
 
+compileMustacheDirCustom :: MonadIO m
+  => PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> String            -- ^ Extension of templates (Without dot)
+  -> m Template        -- ^ The resulting template
+compileMustacheDirCustom pname path ext =
+  getMustacheFilesInDir path ext >>=
+  liftM selectKey . foldM f (Template undefined M.empty)
+  where
+    selectKey t = t { templateActual = pname }
+    f (Template _ old) fp = do
+      Template _ new <- compileMustacheFile fp
+      return (Template undefined (M.union new old))
+
+-- | Return a list of templates found in given directory. The returned paths
+-- are absolute.
+--
+-- @since 1.1.3
+
 getMustacheFilesInDir :: MonadIO m
   => FilePath          -- ^ Directory with templates
+  -> String            -- ^ Extension of templates (Without dot)
   -> m [FilePath]
-getMustacheFilesInDir path = liftIO $
+getMustacheFilesInDir path ext = liftIO $
   getDirectoryContents path >>=
-  filterM isMustacheFile . fmap (F.combine path) >>=
+  filterM (hasExtension ext) . fmap (F.combine path) >>=
   mapM makeAbsolute
 
 -- | Compile a single Mustache template and select it.
@@ -99,10 +119,10 @@ compileMustacheText pname txt =
 
 -- | Check if a given 'FilePath' points to a mustache file.
 
-isMustacheFile :: FilePath -> IO Bool
-isMustacheFile path = do
+hasExtension :: FilePath -> String -> IO Bool
+hasExtension path ext = do
   exists <- doesFileExist path
-  let rightExtension = F.takeExtension path == ".mustache"
+  let rightExtension = F.takeExtension path == ("." ++ ext)
   return (exists && rightExtension)
 
 -- | Build a 'PName' from given 'FilePath'.
