@@ -131,7 +131,8 @@ getTemplateFilesInDir predicate path = liftIO $
   filterM (templateFilter predicate) . fmap (F.combine path) >>=
   mapM makeAbsolute
 
--- | Check if a given 'FilePath' points to a mustache file.
+-- | Check if a given 'FilePath' points to a template file
+-- useing a predicate.
 
 templateFilter :: (FilePath -> Bool) -> FilePath -> IO Bool
 templateFilter predicate path = do
