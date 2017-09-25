@@ -21,6 +21,7 @@
 
 module Text.Mustache.Compile.TH
   ( compileMustacheDir
+  , compileMustacheDirCustom
   , compileMustacheFile
   , compileMustacheText
   , mustache )
@@ -56,11 +57,27 @@ dataToExpQ _ _ = fail "The feature requires at least GHC 8 to work"
 -- This version compiles the templates at compile time.
 
 compileMustacheDir
-  :: PName             -- ^ Which template to select after compiling
-  -> FilePath          -- ^ Directory with templates
-  -> Q Exp             -- ^ The resulting template
-compileMustacheDir pname path = do
-  runIO (C.getMustacheFilesInDir path) >>= mapM_ addDependentFile
+  :: PName              -- ^ Which template to select after compiling
+  -> FilePath           -- ^ Directory with templates
+  -> Q Exp              -- ^ The resulting template
+compileMustacheDir pname path = compileMustacheDirCustom C.isMustacheFile pname path
+
+-- | Compile all templates in specified directory and select one. Template
+-- files are identified via the passed predicate, the predicate operates
+-- on the full relative filepath. This function /does not/ scan the
+-- directory recursively.
+--
+-- This version compiles the templates at compile time.
+--
+-- @since 1.1.3
+
+compileMustacheDirCustom
+  :: (FilePath -> Bool) -- ^ Template selection predicate
+  -> PName              -- ^ Which template to select after compiling
+  -> FilePath           -- ^ Directory with templates
+  -> Q Exp              -- ^ The resulting template
+compileMustacheDirCustom predicate pname path = do
+  runIO (C.getTemplateFilesInDir predicate path) >>= mapM_ addDependentFile
   (runIO . try) (C.compileMustacheDir pname path) >>= handleEither
 
 -- | Compile single Mustache template and select it.
@@ -68,7 +85,7 @@ compileMustacheDir pname path = do
 -- This version compiles the template at compile time.
 
 compileMustacheFile
-  :: FilePath          -- ^ Location of the file
+  :: FilePath           -- ^ Location of the file
   -> Q Exp
 compileMustacheFile path = do
   runIO (makeAbsolute path) >>= addDependentFile
@@ -80,8 +97,8 @@ compileMustacheFile path = do
 -- This version compiles the template at compile time.
 
 compileMustacheText
-  :: PName             -- ^ How to name the template?
-  -> Text              -- ^ The template to compile
+  :: PName              -- ^ How to name the template?
+  -> Text               -- ^ The template to compile
   -> Q Exp
 compileMustacheText pname text =
   (handleEither . either (Left . MustacheParserException text) Right)
