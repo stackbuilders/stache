@@ -38,10 +38,6 @@ import Text.Mustache.Type
 import qualified Data.Text             as T
 import qualified Text.Mustache.Compile as C
 
-#if !MIN_VERSION_base(4,8,0)
-import Control.Applicative
-#endif
-
 #if MIN_VERSION_template_haskell(2,11,0)
 import Language.Haskell.TH.Syntax (dataToExpQ)
 #else

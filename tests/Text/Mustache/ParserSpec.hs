@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.ParserSpec
@@ -12,10 +11,6 @@ import Test.Hspec.Megaparsec
 import Text.Megaparsec
 import Text.Mustache.Parser
 import Text.Mustache.Type
-
-#if !MIN_VERSION_base(4,8,0)
-import Control.Applicative (pure)
-#endif
 
 main :: IO ()
 main = hspec spec
