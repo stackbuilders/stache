@@ -36,10 +36,6 @@ import qualified Data.Text       as T
 import qualified Data.Text.IO    as T
 import qualified System.FilePath as F
 
-#if !MIN_VERSION_base(4,8,0)
-import Control.Applicative
-#endif
-
 -- | Compile all templates in specified directory and select one. Template
 -- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
 -- recognized. This function /does not/ scan the directory recursively.
@@ -67,7 +63,7 @@ compileMustacheDir' :: MonadIO m
   -> m Template        -- ^ The resulting template
 compileMustacheDir' predicate pname path =
   getMustacheFilesInDir' predicate path >>=
-  liftM selectKey . foldM f (Template undefined M.empty)
+  fmap selectKey . foldM f (Template undefined M.empty)
   where
     selectKey t = t { templateActual = pname }
     f (Template _ old) fp = do

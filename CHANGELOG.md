@@ -4,6 +4,8 @@
   custom template predicate. Also exposed `isMustacheFile` as the default
   predicate used by functions like `compileMustacheDir`.
 
+* Abandon attempts to support GHC 7.8.
+
 ## Stache 1.1.2
 
 * Fixed compilation of the test suite with Cabal 2.0/GHC 8.2.1.

@@ -39,10 +39,6 @@ import qualified Data.Text.Lazy.Builder  as B
 import qualified Data.Text.Lazy.Encoding as TL
 import qualified Data.Vector             as V
 
-#if !MIN_VERSION_base(4,8,0)
-import Control.Applicative
-#endif
-
 ----------------------------------------------------------------------------
 -- The rendering monad
 

@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.RenderSpec
@@ -13,10 +12,6 @@ import Text.Megaparsec
 import Text.Mustache.Render
 import Text.Mustache.Type
 import qualified Data.Map as M
-
-#if !MIN_VERSION_base(4,8,0)
-import Control.Applicative (pure)
-#endif
 
 main :: IO ()
 main = hspec spec
