@@ -74,7 +74,7 @@ compileMustacheDir'
   -> Q Exp             -- ^ The resulting template
 compileMustacheDir' predicate pname path = do
   runIO (C.getMustacheFilesInDir' predicate path) >>= mapM_ addDependentFile
-  (runIO . try) (C.compileMustacheDir pname path) >>= handleEither
+  (runIO . try) (C.compileMustacheDir' predicate pname path) >>= handleEither
 
 -- | Compile single Mustache template and select it.
 --
