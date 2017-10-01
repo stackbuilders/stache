@@ -1,3 +1,9 @@
+## Stache 1.2.1
+
+* Fixed a bug in `compileMustacheDir'` from `Text.Mustache.Compile.TH`: it
+  did not use the supplied predicate and selected only `.mustache` files
+  like `compileMustacheDir`.
+
 ## Stache 1.2.0
 
 * Added `compileMustacheDir'` and `getMusthacheFilesInDir'` that allow for a
