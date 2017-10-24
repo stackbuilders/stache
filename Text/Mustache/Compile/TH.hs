@@ -127,12 +127,7 @@ mustache = QuasiQuoter
 handleEither :: Either MustacheException Template -> Q Exp
 handleEither val =
   case val of
-    Left err -> fail . indentNicely $
-#if MIN_VERSION_base(4,8,0)
-      displayException err
-#else
-      show err
-#endif
+    Left err -> (fail . indentNicely . displayException) err
     Right template -> dataToExpQ (fmap liftText . cast) template
   where
     -- NOTE Since the feature requires GHC 8 anyway, we follow the
