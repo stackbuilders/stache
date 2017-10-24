@@ -117,9 +117,9 @@ compileMustacheText pname text =
 mustache :: QuasiQuoter
 mustache = QuasiQuoter
   { quoteExp  = compileMustacheText "quasi-quoted" . T.pack
-  , quotePat  = undefined
-  , quoteType = undefined
-  , quoteDec  = undefined }
+  , quotePat  = error "This usage is not supported."
+  , quoteType = error "This usage is not supported."
+  , quoteDec  = error "This usage is not supported." }
 
 -- | Given an 'Either' result return 'Right' and signal pretty-printed error
 -- if we have a 'Left'.
