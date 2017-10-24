@@ -119,12 +119,8 @@ data MustacheException
     -- /The 'Text' field was added in version 1.0.0./
   deriving (Eq, Show, Typeable, Generic)
 
-#if MIN_VERSION_base(4,8,0)
 instance Exception MustacheException where
   displayException (MustacheParserException s e) = parseErrorPretty' s e
-#else
-instance Exception MustacheException
-#endif
 
 -- | Warning that may be generated during rendering of a 'Template'.
 --
