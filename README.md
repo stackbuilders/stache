@@ -5,7 +5,6 @@
 [![Stackage Nightly](http://stackage.org/package/stache/badge/nightly)](http://stackage.org/nightly/package/stache)
 [![Stackage LTS](http://stackage.org/package/stache/badge/lts)](http://stackage.org/lts/package/stache)
 [![Build Status](https://travis-ci.org/stackbuilders/stache.svg?branch=master)](https://travis-ci.org/stackbuilders/stache)
-[![Coverage Status](https://coveralls.io/repos/github/stackbuilders/stache/badge.svg?branch=master)](https://coveralls.io/github/stackbuilders/stache?branch=master)
 
 This is a Haskell implementation of Mustache templates. The implementation
 conforms to the version 1.1.3 of the
