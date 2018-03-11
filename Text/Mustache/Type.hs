@@ -32,7 +32,6 @@ import Control.DeepSeq
 import Control.Exception (Exception(..))
 import Data.Data (Data)
 import Data.Map (Map)
-import Data.Semigroup
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Typeable (Typeable)
@@ -41,6 +40,10 @@ import GHC.Generics
 import Text.Megaparsec
 import qualified Data.Map  as M
 import qualified Data.Text as T
+
+#if !MIN_VERSION_base(4,11,0)
+import Data.Semigroup
+#endif
 
 -- | Mustache template as name of “top-level” template and a collection of
 -- all available templates (partials).
