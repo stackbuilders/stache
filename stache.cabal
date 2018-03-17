@@ -1,6 +1,6 @@
 name:                 stache
 version:              1.2.1
-cabal-version:        >= 1.18
+cabal-version:        1.18
 tested-with:          GHC==7.10.3, GHC==8.0.2, GHC==8.2.2, GHC==8.4.1
 license:              BSD3
 license-file:         LICENSE.md
@@ -74,6 +74,7 @@ test-suite tests
                     , Text.Mustache.ParserSpec
                     , Text.Mustache.RenderSpec
                     , Text.Mustache.TypeSpec
+  build-tools:        hspec-discover   >= 2.0  && < 3.0
   if !impl(ghc >= 8.0)
     build-depends:    semigroups     == 0.18.*
   if flag(dev)
