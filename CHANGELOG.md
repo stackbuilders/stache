@@ -1,3 +1,7 @@
+## Stache 1.2.2
+
+* Updated upper bound for yaml 0.10
+
 ## Stache 1.2.1
 
 * Fixed a bug in `compileMustacheDir'` from `Text.Mustache.Compile.TH`: it
