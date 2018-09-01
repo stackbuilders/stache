@@ -81,7 +81,7 @@ renderBench = bgroup "render"
 
 bparser :: String -> FilePath -> Benchmark
 bparser desc path = env (T.readFile path)
-  (bench desc . nf (either (error . parseErrorPretty) id . parseMustache path))
+  (bench desc . nf (either (error . errorBundlePretty) id . parseMustache path))
 
 brender :: String -> FilePath -> Value -> Benchmark
 brender desc path value = env (compileMustacheFile path)

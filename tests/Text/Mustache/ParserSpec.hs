@@ -86,7 +86,7 @@ spec = describe "parseMustache" $ do
   context "when given malformed input" $ do
     it "rejects unclosed tags" $ do
       let s = "{{ name "
-      p s `shouldFailWith` err (posN 8 s) (ueof <> etoks "}}")
+      p s `shouldFailWith` err 8 (ueof <> etoks "}}")
     it "rejects unknown tags" $ do
       let s = "{{? boo }}"
-      p s `shouldFailWith` err (posN 2 s) (utoks "?" <> elabel "key")
+      p s `shouldFailWith` err 2 (utoks "?" <> elabel "key")

@@ -97,7 +97,7 @@ compileMustacheText
   -> Text              -- ^ The template to compile
   -> Q Exp
 compileMustacheText pname text =
-  (handleEither . either (Left . MustacheParserException text) Right)
+  (handleEither . either (Left . MustacheParserException) Right)
   (C.compileMustacheText pname text)
 
 -- | Compile Mustache using QuasiQuoter. Usage:

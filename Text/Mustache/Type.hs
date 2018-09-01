@@ -113,8 +113,8 @@ instance NFData PName
 -- | Exception that is thrown when parsing of a template fails or referenced
 -- values are not provided.
 
-data MustacheException
-  = MustacheParserException Text (ParseError Char Void)
+newtype MustacheException
+  = MustacheParserException (ParseErrorBundle Text Void)
     -- ^ Template parser has failed. This contains the parse error.
     --
     -- /Before version 0.2.0 it was called 'MustacheException'./
@@ -123,7 +123,7 @@ data MustacheException
   deriving (Eq, Show, Typeable, Generic)
 
 instance Exception MustacheException where
-  displayException (MustacheParserException s e) = parseErrorPretty' s e
+  displayException (MustacheParserException b) = errorBundlePretty b
 
 -- | Warning that may be generated during rendering of a 'Template'.
 --
