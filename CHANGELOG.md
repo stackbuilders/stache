@@ -1,3 +1,9 @@
+## Stache 2.0.0
+
+* Uses Megaparsec 7. In particular, the parser now returns
+  `ParseErrorBundle` on failure and the bundle is also inside
+  `MustacheException`.
+
 ## Stache 1.2.1
 
 * Fixed a bug in `compileMustacheDir'` from `Text.Mustache.Compile.TH`: it

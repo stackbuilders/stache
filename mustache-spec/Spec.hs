@@ -67,7 +67,7 @@ spec = do
 
 specData :: String -> ByteString -> Spec
 specData aspect bytes = describe aspect $ do
-  let handleError = expectationFailure . parseErrorPretty
+  let handleError = expectationFailure . errorBundlePretty
   case decodeEither' bytes of
     Left err ->
       it "should load YAML specs first" $

@@ -112,7 +112,7 @@ compileMustacheFile :: MonadIO m
   -> m Template
 compileMustacheFile path = liftIO $ do
   input <- T.readFile path
-  withException input (compile input)
+  withException (compile input)
   where
     pname = pathToPName path
     compile = fmap (Template pname . M.singleton pname) . parseMustache path
@@ -123,7 +123,7 @@ compileMustacheFile path = liftIO $ do
 compileMustacheText
   :: PName             -- ^ How to name the template?
   -> Text              -- ^ The template to compile
-  -> Either (ParseError Char Void) Template -- ^ The result
+  -> Either (ParseErrorBundle Text Void) Template -- ^ The result
 compileMustacheText pname txt =
   Template pname . M.singleton pname <$> parseMustache "" txt
 
@@ -139,7 +139,6 @@ pathToPName = PName . T.pack . F.takeBaseName
 -- inside 'Right'.
 
 withException
-  :: Text              -- ^ Original input
-  -> Either (ParseError Char Void) Template -- ^ Value to process
+  :: Either (ParseErrorBundle Text Void) Template -- ^ Value to process
   -> IO Template       -- ^ The result
-withException input = either (throwIO . MustacheParserException input) return
+withException = either (throwIO . MustacheParserException) return
