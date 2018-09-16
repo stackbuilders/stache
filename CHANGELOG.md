@@ -1,3 +1,7 @@
+## Stache 2.0.1
+
+* Now interpolation with escaping also escapes single quotes as `&#39`.
+
 ## Stache 2.0.0
 
 * Uses Megaparsec 7. In particular, the parser now returns
