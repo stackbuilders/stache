@@ -295,6 +295,7 @@ renderValue k v =
 escapeHtml :: Text -> Text
 escapeHtml txt = foldr (uncurry T.replace) txt
   [ ("\"", "&quot;")
+  , ("'",  "&#39;")
   , ("<",  "&lt;")
   , (">",  "&gt;")
   , ("&",  "&amp;") ]
