@@ -1,6 +1,6 @@
 -- |
 -- Module      :  Text.Mustache.Render
--- Copyright   :  © 2016–2018 Stack Builders
+-- Copyright   :  © 2016–2019 Stack Builders
 -- License     :  BSD 3 clause
 --
 -- Maintainer  :  Mark Karpov <markkarpov92@gmail.com>
