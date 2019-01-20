@@ -85,6 +85,11 @@ module Text.Mustache
   , compileMustacheDir'
   , compileMustacheFile
   , compileMustacheText
+    -- * Compiling with additional error information on some renderer failures.
+  , compileMustacheDirWithLocs
+  , compileMustacheDirWithLocs'
+  , compileMustacheFileWithLocs
+  , compileMustacheTextWithLocs
     -- * Rendering
   , renderMustache
   , renderMustacheW )

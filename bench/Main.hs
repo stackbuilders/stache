@@ -19,29 +19,35 @@ import qualified Data.Text.IO as T
 -- Benchmarks
 
 main :: IO ()
-main = defaultMain [ parserBench, renderBench ]
+main = defaultMain [ parserBench, parserWithLocBench, renderBench ]
+
+pBench :: String -> (String -> FilePath -> Benchmark) -> Benchmark
+pBench title parseF = bgroup title
+    [ parseF "simple block of text"
+        "bench-data/lorem-ipsum.mustache"
+    , parseF "text with escaped var"
+        "bench-data/escaped-var.mustache"
+    , parseF "text with unescaped var"
+        "bench-data/unescaped-var.mustache"
+    , parseF "text with unescaped var special"
+        "bench-data/unescaped-var-spec.mustache"
+    , parseF "a section"
+        "bench-data/section.mustache"
+    , parseF "an inverted section"
+        "bench-data/inverted-section.mustache"
+    , parseF "nested sections"
+        "bench-data/nested-sections.mustache"
+    , parseF "text with partial"
+        "bench-data/partial.mustache"
+    , parseF "comprehensive template"
+        "bench-data/comprehensive.mustache"
+    ]
 
 parserBench :: Benchmark
-parserBench = bgroup "parser"
-  [ bparser "simple block of text"
-      "bench-data/lorem-ipsum.mustache"
-  , bparser "text with escaped var"
-      "bench-data/escaped-var.mustache"
-  , bparser "text with unescaped var"
-      "bench-data/unescaped-var.mustache"
-  , bparser "text with unescaped var special"
-      "bench-data/unescaped-var-spec.mustache"
-  , bparser "a section"
-      "bench-data/section.mustache"
-  , bparser "an inverted section"
-      "bench-data/inverted-section.mustache"
-  , bparser "nested sections"
-      "bench-data/nested-sections.mustache"
-  , bparser "text with partial"
-      "bench-data/partial.mustache"
-  , bparser "comprehensive template"
-      "bench-data/comprehensive.mustache"
-  ]
+parserBench = pBench "parser" bparser
+
+parserWithLocBench :: Benchmark
+parserWithLocBench = pBench "parserWithLocs" bparserWithLocs
 
 renderBench :: Benchmark
 renderBench = bgroup "render"
@@ -82,6 +88,10 @@ renderBench = bgroup "render"
 bparser :: String -> FilePath -> Benchmark
 bparser desc path = env (T.readFile path)
   (bench desc . nf (either (error . errorBundlePretty) id . parseMustache path))
+
+bparserWithLocs :: String -> FilePath -> Benchmark
+bparserWithLocs desc path = env (T.readFile path)
+  (bench desc . nf (either (error . errorBundlePretty) id . parseMustacheWithPositions path))
 
 brender :: String -> FilePath -> Value -> Benchmark
 brender desc path value = env (compileMustacheFile path)

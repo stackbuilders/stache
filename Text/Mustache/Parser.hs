@@ -14,7 +14,8 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.Parser
-  ( parseMustache )
+  ( parseMustache
+  , parseMustacheWithPositions )
 where
 
 import Control.Monad
@@ -43,7 +44,23 @@ parseMustache
   -> Either (ParseErrorBundle Text Void) [Node]
      -- ^ Parsed nodes or parse error
 parseMustache = parse $
-  evalStateT (pMustache eof) (St "{{" "}}" 0)
+  evalStateT (pMustache eof) (St "{{" "}}" 0 False)
+
+-- | Parse a given Mustache template and collect position information for keys.
+--
+-- Might be slower than 'parseMustache' due to use of 'getSourcePos'.
+--
+-- @since 2.1.1
+parseMustacheWithPositions
+  :: FilePath
+     -- ^ Location of the file to parse
+  -> Text
+     -- ^ File contents (Mustache template)
+  -> Either (ParseErrorBundle Text Void) [Node]
+     -- ^ Parsed nodes or parse error
+parseMustacheWithPositions = parse $
+  evalStateT (pMustache eof) (St "{{" "}}" 0 True)
+
 
 pMustache :: Parser () -> Parser [Node]
 pMustache = fmap catMaybes . manyTill (choice alts)
@@ -149,8 +166,17 @@ pClosingTag key = do
   void $ between (symbol $ start <> "/") (string end) (symbol str)
 {-# INLINE pClosingTag #-}
 
+pPos :: Parser (Maybe SourcePos)
+pPos = do
+  collect <- gets collectKeyPos
+  if not collect
+  then return Nothing
+  else Just <$> getSourcePos
+
 pKey :: Parser Key
-pKey = (fmap Key . lexeme . label "key") (implicit <|> other)
+pKey = do
+  pos <- pPos
+  (fmap (flip Key pos) . lexeme . label "key") (implicit <|> other)
   where
     implicit = [] <$ char '.'
     other    = sepBy1 (takeWhile1P (Just lbl) f) (char '.')
@@ -186,6 +212,8 @@ data St = St
     -- ^ Closing delimiter
   , newlineOffset :: !Int
     -- ^ The offset at which last newline character was parsed
+  , collectKeyPos :: !Bool
+    -- ^ Wether to collect the source positions of keys
   }
 
 ----------------------------------------------------------------------------
@@ -210,8 +238,8 @@ symbol = L.symbol scn
 {-# INLINE symbol #-}
 
 keyToText :: Key -> Text
-keyToText (Key []) = "."
-keyToText (Key ks) = T.intercalate "." ks
+keyToText (Key [] _) = "."
+keyToText (Key ks _) = T.intercalate "." ks
 {-# INLINE keyToText #-}
 
 eol' :: Parser Text

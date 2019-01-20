@@ -15,12 +15,17 @@
 
 module Text.Mustache.Compile
   ( compileMustacheDir
+  , compileMustacheDirWithLocs
   , compileMustacheDir'
+  , compileMustacheDirWithLocs'
   , getMustacheFilesInDir
   , getMustacheFilesInDir'
   , isMustacheFile
   , compileMustacheFile
-  , compileMustacheText )
+  , compileMustacheFileWithLocs
+  , compileMustacheText
+  , compileMustacheTextWithLocs
+  )
 where
 
 import Control.Exception
@@ -51,6 +56,27 @@ compileMustacheDir :: MonadIO m
   -> m Template        -- ^ The resulting template
 compileMustacheDir = compileMustacheDir' isMustacheFile
 
+-- | Compile all templates in specified directory and select one. Template
+-- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
+-- recognized. This function /does not/ scan the directory recursively.
+--
+-- The action can throw the same exceptions as 'getDirectoryContents', and
+-- 'T.readFile'.
+--
+-- > compileMustacheDirWithLocs = complieMustacheDirWithLocs' isMustacheFile
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+compileMustacheDirWithLocs :: MonadIO m
+  => PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> m Template        -- ^ The resulting template
+compileMustacheDirWithLocs = compileMustacheDirWithLocs' isMustacheFile
+
 -- | The same as 'compileMustacheDir', but allows using a custom predicate
 -- for template selection.
 --
@@ -68,6 +94,29 @@ compileMustacheDir' predicate pname path =
     selectKey t = t { templateActual = pname }
     f (Template _ old) fp = do
       Template _ new <- compileMustacheFile fp
+      return (Template undefined (M.union new old))
+
+-- | The same as 'compileMustacheDir', but allows using a custom predicate
+-- for template selection.
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+compileMustacheDirWithLocs' :: MonadIO m
+  => (FilePath -> Bool) -- ^ Template selection predicate
+  -> PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> m Template        -- ^ The resulting template
+compileMustacheDirWithLocs' predicate pname path =
+  getMustacheFilesInDir' predicate path >>=
+  fmap selectKey . foldM f (Template undefined M.empty)
+  where
+    selectKey t = t { templateActual = pname }
+    f (Template _ old) fp = do
+      Template _ new <- compileMustacheFileWithLocs fp
       return (Template undefined (M.union new old))
 
 -- | Return a list of templates found in given directory. The returned paths
@@ -110,12 +159,22 @@ isMustacheFile path = F.takeExtension path == ".mustache"
 compileMustacheFile :: MonadIO m
   => FilePath          -- ^ Location of the file
   -> m Template
-compileMustacheFile path = liftIO $ do
-  input <- T.readFile path
-  withException (compile input)
-  where
-    pname = pathToPName path
-    compile = fmap (Template pname . M.singleton pname) . parseMustache path
+compileMustacheFile = compileMustacheFileImpl parseMustache
+
+-- | Compile a single Mustache template and select it.
+--
+-- The action can throw the same exceptions as 'T.readFile'.
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+compileMustacheFileWithLocs :: MonadIO m
+  => FilePath          -- ^ Location of the file
+  -> m Template
+compileMustacheFileWithLocs = compileMustacheFileImpl parseMustacheWithPositions
 
 -- | Compile Mustache template from a lazy 'Text' value. The cache will
 -- contain only this template named according to given 'PName'.
@@ -124,8 +183,22 @@ compileMustacheText
   :: PName             -- ^ How to name the template?
   -> Text              -- ^ The template to compile
   -> Either (ParseErrorBundle Text Void) Template -- ^ The result
-compileMustacheText pname txt =
-  Template pname . M.singleton pname <$> parseMustache "" txt
+compileMustacheText = compileMustacheTextImpl parseMustache
+
+-- | Compile Mustache template from a lazy 'Text' value. The cache will
+-- contain only this template named according to given 'PName'.
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+compileMustacheTextWithLocs
+  :: PName             -- ^ How to name the template?
+  -> Text              -- ^ The template to compile
+  -> Either (ParseErrorBundle Text Void) Template -- ^ The result
+compileMustacheTextWithLocs = compileMustacheTextImpl parseMustacheWithPositions
 
 ----------------------------------------------------------------------------
 -- Helpers
@@ -142,3 +215,29 @@ withException
   :: Either (ParseErrorBundle Text Void) Template -- ^ Value to process
   -> IO Template       -- ^ The result
 withException = either (throwIO . MustacheParserException) return
+
+-- | Compile a single Mustache template and select it.
+--
+-- The action can throw the same exceptions as 'T.readFile'.
+
+compileMustacheFileImpl :: MonadIO m
+  => (FilePath -> Text -> Either (ParseErrorBundle Text Void) [Node]) -- ^ Which parser to use
+  -> FilePath              -- ^ Location of the file
+  -> m Template
+compileMustacheFileImpl f path = liftIO $ do
+  input <- T.readFile path
+  withException (compile input)
+  where
+    pname = pathToPName path
+    compile = fmap (Template pname . M.singleton pname) . f path
+
+-- | Compile Mustache template from a lazy 'Text' value. The cache will
+-- contain only this template named according to given 'PName'.
+
+compileMustacheTextImpl :: Functor f
+  => (String -> Text -> f [Node]) -- ^ parse function to use
+  -> PName                        -- ^ How to name the template?
+  -> Text                         -- ^ The template to compile
+  -> f Template                   -- ^ The result
+compileMustacheTextImpl f pname txt =
+  Template pname . M.singleton pname <$> f "" txt

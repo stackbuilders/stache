@@ -186,12 +186,12 @@ renderMany f (n:ns) = do
 -- | Lookup a 'Value' by its 'Key'.
 
 lookupKey :: Key -> Render Value
-lookupKey (Key []) = NE.head <$> asks rcContext
+lookupKey (Key [] _) = NE.head <$> asks rcContext
 lookupKey k = do
   v <- asks rcContext
   p <- asks rcPrefix
   let f x = asum (simpleLookup False (x <> k) <$> v)
-  case asum (fmap (f . Key) . reverse . tails $ unKey p) of
+  case asum (fmap (f . (flip Key Nothing)) . reverse . tails $ unKey p) of
     Nothing ->
       Null <$ tellWarning (MustacheVariableNotFound (p <> k))
     Just r ->
@@ -209,11 +209,11 @@ simpleLookup
   -> Key               -- ^ The key to lookup
   -> Value             -- ^ Source value
   -> Maybe Value       -- ^ Looked-up value
-simpleLookup _ (Key [])     obj        = return obj
-simpleLookup c (Key (k:ks)) (Object m) =
+simpleLookup _ (Key [] _)     obj        = return obj
+simpleLookup c (Key (k:ks) _) (Object m) =
   case H.lookup k m of
     Nothing -> if c then Just Null else Nothing
-    Just  v -> simpleLookup True (Key ks) v
+    Just  v -> simpleLookup True (Key ks Nothing) v
 simpleLookup _ _ _ = Nothing
 {-# INLINE simpleLookup #-}
 

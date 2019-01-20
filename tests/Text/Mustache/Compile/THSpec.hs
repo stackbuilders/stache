@@ -13,6 +13,7 @@ import Test.Hspec
 #if MIN_VERSION_template_haskell(2,11,0)
 import Data.Semigroup ((<>))
 import Text.Mustache.Type
+import Text.Megaparsec (SourcePos(..), mkPos)
 import qualified Data.Map                 as M
 import qualified Text.Mustache.Compile.TH as TH
 #endif
@@ -28,6 +29,11 @@ spec = do
       [TH.mustache|From Quasi-Quote!
 |]
         `shouldBe` qqTemplate
+  describe "mustacheWithLocs" $
+    it "compiles template using QuasiQuotes at compile time" $
+      [TH.mustacheWithLocs|Hello {{name}} from Quasi-Quote!
+|]
+        `shouldBe` qqWithLocTemplate
   describe "compileMustacheText" $
     it "compiles template from text at compile time" $
       $(TH.compileMustacheText "foo" "This is the ‘foo’.\n")
@@ -45,6 +51,12 @@ qqTemplate :: Template
 qqTemplate = Template "quasi-quoted" $
   M.singleton "quasi-quoted" [TextBlock "From Quasi-Quote!\n"]
 
+qqWithLocTemplate :: Template
+qqWithLocTemplate = Template "quasi-quoted" $
+    M.singleton "quasi-quoted" [ TextBlock "Hello "
+                               , EscapedVar (Key ["name"] (Just SourcePos { sourceName = "", sourceColumn = mkPos 9, sourceLine = mkPos 1}))
+                               , TextBlock " from Quasi-Quote!\n"]
+  
 fooTemplate :: Template
 fooTemplate = Template "foo" $
   M.singleton "foo" [TextBlock "This is the ‘foo’.\n"]

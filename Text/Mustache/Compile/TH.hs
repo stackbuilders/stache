@@ -24,7 +24,12 @@ module Text.Mustache.Compile.TH
   , compileMustacheDir'
   , compileMustacheFile
   , compileMustacheText
-  , mustache )
+  , mustache 
+  , compileMustacheDirWithLocs
+  , compileMustacheDirWithLocs'
+  , compileMustacheFileWithLocs
+  , compileMustacheTextWithLocs
+  , mustacheWithLocs )
 where
 
 import Control.Exception
@@ -60,6 +65,26 @@ compileMustacheDir
   -> Q Exp             -- ^ The resulting template
 compileMustacheDir = compileMustacheDir' C.isMustacheFile
 
+-- | Compile all templates in specified directory and select one. Template
+-- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
+-- recognized. This function /does not/ scan the directory recursively.
+--
+-- This version compiles the templates at compile time.
+--
+-- > compileMustacheDirWithLocs = compileMustacheDirWithLocs' isMustacheFile
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+compileMustacheDirWithLocs
+  :: PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> Q Exp             -- ^ The resulting template
+compileMustacheDirWithLocs = compileMustacheDirWithLocs' C.isMustacheFile
+
 -- | The same as 'compileMustacheDir', but allows using a custom predicate
 -- for template selection.
 --
@@ -76,6 +101,26 @@ compileMustacheDir' predicate pname path = do
   runIO (C.getMustacheFilesInDir' predicate path) >>= mapM_ addDependentFile
   (runIO . try) (C.compileMustacheDir' predicate pname path) >>= handleEither
 
+-- | The same as 'compileMustacheDirWithLocs', but allows using a custom predicate
+-- for template selection.
+--
+-- This version compiles the templates at compile time.
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+-- 
+-- @since 2.1.1
+
+compileMustacheDirWithLocs'
+  :: (FilePath -> Bool) -- ^ Template selection predicate
+  -> PName             -- ^ Which template to select after compiling
+  -> FilePath          -- ^ Directory with templates
+  -> Q Exp             -- ^ The resulting template
+compileMustacheDirWithLocs' predicate pname path = do
+  runIO (C.getMustacheFilesInDir' predicate path) >>= mapM_ addDependentFile
+  (runIO . try) (C.compileMustacheDirWithLocs' predicate pname path) >>= handleEither
+
 -- | Compile single Mustache template and select it.
 --
 -- This version compiles the template at compile time.
@@ -86,6 +131,23 @@ compileMustacheFile
 compileMustacheFile path = do
   runIO (makeAbsolute path) >>= addDependentFile
   (runIO . try) (C.compileMustacheFile path) >>= handleEither
+
+-- | Compile single Mustache template and select it.
+--
+-- This version compiles the template at compile time.
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+compileMustacheFileWithLocs
+  :: FilePath          -- ^ Location of the file
+  -> Q Exp
+compileMustacheFileWithLocs path = do
+  runIO (makeAbsolute path) >>= addDependentFile
+  (runIO . try) (C.compileMustacheFileWithLocs path) >>= handleEither
 
 -- | Compile Mustache template from 'Text' value. The cache will contain
 -- only this template named according to given 'Key'.
@@ -99,6 +161,25 @@ compileMustacheText
 compileMustacheText pname text =
   (handleEither . either (Left . MustacheParserException) Right)
   (C.compileMustacheText pname text)
+
+-- | Compile Mustache template from 'Text' value. The cache will contain
+-- only this template named according to given 'Key'.
+--
+-- This version compiles the template at compile time.
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+compileMustacheTextWithLocs
+  :: PName             -- ^ How to name the template?
+  -> Text              -- ^ The template to compile
+  -> Q Exp
+compileMustacheTextWithLocs pname text =
+  (handleEither . either (Left . MustacheParserException) Right)
+  (C.compileMustacheTextWithLocs pname text)
 
 -- | Compile Mustache using QuasiQuoter. Usage:
 --
@@ -117,6 +198,31 @@ compileMustacheText pname text =
 mustache :: QuasiQuoter
 mustache = QuasiQuoter
   { quoteExp  = compileMustacheText "quasi-quoted" . T.pack
+  , quotePat  = error "This usage is not supported."
+  , quoteType = error "This usage is not supported."
+  , quoteDec  = error "This usage is not supported." }
+
+-- | Compile Mustache using QuasiQuoter. Usage:
+--
+-- > {-# LANGUAGE QuasiQuotes #-}
+-- > import Text.Mustache.Compile.TH (mustacheWithLocs)
+-- >
+-- > foo :: Template
+-- > foo = [mustacheWithLocs|This is my inline {{ template }}.|]
+--
+-- Name of created partial is set to @"quasi-quoted"@. You can extend cache
+-- of 'Template' created this way using @('Data.Semigroup.<>')@ and so work
+-- with partials as usual.
+--
+-- If a template created with this function is rendered, source
+-- locations of keys will be included in error messages, if a key
+-- is not present in the Value.
+--
+-- @since 2.1.1
+
+mustacheWithLocs :: QuasiQuoter
+mustacheWithLocs = QuasiQuoter
+  { quoteExp  = compileMustacheTextWithLocs "quasi-quoted" . T.pack
   , quotePat  = error "This usage is not supported."
   , quoteType = error "This usage is not supported."
   , quoteDec  = error "This usage is not supported." }

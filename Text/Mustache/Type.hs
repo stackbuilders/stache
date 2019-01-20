@@ -14,7 +14,6 @@
 {-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
 
 module Text.Mustache.Type
@@ -85,10 +84,15 @@ data Node
 --     * @[text]@—single key is a normal identifier;
 --     * @[text1, text2]@—multiple keys represent dotted names.
 
-newtype Key = Key { unKey :: [Text] }
-  deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Typeable, Generic)
+data Key = Key { unKey :: [Text], keySourcePos :: Maybe SourcePos }
+  deriving (Eq, Ord, Show, Data, Typeable, Generic)
 
 instance NFData Key
+instance Semigroup Key where
+  (Key a _) <> (Key c d) = Key (a<>c) d
+instance Monoid Key where
+  mempty = (Key [] Nothing)
+  mappend = (<>)
 
 -- | Pretty-print a key, this is helpful, for example, if you want to
 -- display an error message.
@@ -96,8 +100,8 @@ instance NFData Key
 -- @since 0.2.0
 
 showKey :: Key -> Text
-showKey (Key []) = "<implicit>"
-showKey (Key xs) = T.intercalate "." xs
+showKey (Key [] _) = "<implicit>"
+showKey (Key xs _) = T.intercalate "." xs
 
 -- | Identifier for partials. Note that with the @OverloadedStrings@
 -- extension you can use just string literals to create values of this type.
@@ -144,6 +148,6 @@ data MustacheWarning
 
 displayMustacheWarning :: MustacheWarning -> String
 displayMustacheWarning (MustacheVariableNotFound key) =
-  "Referenced value was not provided, key: " ++ T.unpack (showKey key)
+  "Referenced value was not provided, key: " ++ T.unpack (showKey key) ++ maybe "" ((", position in template: " ++) . sourcePosPretty) (keySourcePos key)
 displayMustacheWarning (MustacheDirectlyRenderedValue key) =
-  "Complex value rendered as such, key: " ++ T.unpack (showKey key)
+  "Complex value rendered as such, key: " ++ T.unpack (showKey key) ++ maybe "" ((", position in template: " ++) . sourcePosPretty) (keySourcePos key)

@@ -24,7 +24,7 @@ spec = describe "renderMustache" $ do
       r ns value =
         let template = Template "test" (M.singleton "test" ns)
         in renderMustache template value
-      key = Key . pure
+      key name = Key { unKey = pure name, keySourcePos = Nothing }
   it "leaves text block “as is”" $
     r [TextBlock "a text block"] Null `shouldBe` "a text block"
   it "renders escaped variables correctly" $
@@ -91,7 +91,7 @@ spec = describe "renderMustache" $ do
             (object ["foo" .= (5 :: Int)])
             `shouldBe` "brr"
         it "uses the key as context" $
-          r [Section (key "foo") [EscapedVar (Key [])]]
+          r [Section (key "foo") [EscapedVar (Key [] Nothing)]]
             (object ["foo" .= (5 :: Int)])
             `shouldBe` "5"
       context "when the key is a non-empty string" $ do
@@ -100,7 +100,7 @@ spec = describe "renderMustache" $ do
             (object ["foo" .= ("x" :: Text)])
             `shouldBe` "brr"
         it "uses the key as context" $
-          r [Section (key "foo") [EscapedVar (Key [])]]
+          r [Section (key "foo") [EscapedVar (Key [] Nothing)]]
             (object ["foo" .= ("x" :: Text)])
             `shouldBe` "x"
   context "when rendering an inverted section" $ do
@@ -141,7 +141,7 @@ spec = describe "renderMustache" $ do
   context "when using dotted keys inside a section" $
     it "it should be equivalent to access via one more section" $
       r [ Section (key "things")
-          [ EscapedVar (Key ["atts", "color"])
+          [ EscapedVar (Key ["atts", "color"] Nothing)
           , TextBlock " == "
           , Section (key "atts") [EscapedVar (key "color")] ] ]
         (object ["things" .=
