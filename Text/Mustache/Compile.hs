@@ -40,8 +40,8 @@ import qualified System.FilePath as F
 -- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
 -- recognized. This function /does not/ scan the directory recursively.
 --
--- The action can throw the same exceptions as 'getDirectoryContents', and
--- 'T.readFile'.
+-- The action can throw 'MustacheParserException' and the same exceptions as
+-- 'getDirectoryContents', and 'T.readFile'.
 --
 -- > compileMustacheDir = complieMustacheDir' isMustacheFile
 
@@ -105,7 +105,8 @@ isMustacheFile path = F.takeExtension path == ".mustache"
 
 -- | Compile a single Mustache template and select it.
 --
--- The action can throw the same exceptions as 'T.readFile'.
+-- The action can throw 'MustacheParserException' and the same exceptions as
+-- 'T.readFile'.
 
 compileMustacheFile :: MonadIO m
   => FilePath          -- ^ Location of the file
