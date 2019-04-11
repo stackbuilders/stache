@@ -50,7 +50,7 @@
 -- >   let res = compileMustacheText "foo"
 -- >         "Hi, {{name}}! You have:\n{{#things}}\n  * {{.}}\n{{/things}}\n"
 -- >   case res of
--- >     Left err -> putStrLn (parseErrorPretty err)
+-- >     Left bundle -> putStrLn (errorBundlePretty bundle)
 -- >     Right template -> TIO.putStr $ renderMustache template $ object
 -- >       [ "name"   .= ("John" :: Text)
 -- >       , "things" .= ["pen" :: Text, "candle", "egg"]
