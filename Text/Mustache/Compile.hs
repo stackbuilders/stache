@@ -40,6 +40,11 @@ import qualified System.FilePath as F
 -- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
 -- recognized. This function /does not/ scan the directory recursively.
 --
+-- Note that each template\/partial will get an identifier which consists of
+-- the name of corresponding template file with extension @.mustache@
+-- dropped. This is important for e.g. selecting active template after
+-- loading (the first argument).
+--
 -- The action can throw 'MustacheParserException' and the same exceptions as
 -- 'getDirectoryContents', and 'T.readFile'.
 --
