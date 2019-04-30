@@ -11,8 +11,6 @@
 -- usually need to import the module, because "Text.Mustache" re-exports
 -- everything you may need, import that module instead.
 
-{-# LANGUAGE CPP #-}
-
 module Text.Mustache.Compile
   ( compileMustacheDir
   , compileMustacheDir'
