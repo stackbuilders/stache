@@ -1,3 +1,7 @@
+## Unreleased
+
+* Documentation improvements.
+
 ## Stache 2.0.1
 
 * Now interpolation with escaping also escapes single quotes as `&#39`.
