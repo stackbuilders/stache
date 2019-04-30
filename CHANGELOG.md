@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Dropped support for GHC 7.10.
+
 * Documentation improvements.
 
 ## Stache 2.0.1
