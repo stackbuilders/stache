@@ -1,6 +1,6 @@
 -- |
 -- Module      :  Text.Mustache.Type
--- Copyright   :  © 2016–2019 Stack Buliders
+-- Copyright   :  © 2016–present Stack Buliders
 -- License     :  BSD 3 clause
 --
 -- Maintainer  :  Mark Karpov <markkarpov92@gmail.com>

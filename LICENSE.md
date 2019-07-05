@@ -1,4 +1,4 @@
-Copyright © 2016–2018 Stack Builders
+Copyright © 2016–present Stack Builders
 
 All rights reserved.
 
