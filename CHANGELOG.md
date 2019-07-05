@@ -1,6 +1,6 @@
 ## Unreleased
 
-* Dropped support for GHC 7.10.
+* Dropped support for GHC 8.0 and older.
 
 * Documentation improvements.
 
