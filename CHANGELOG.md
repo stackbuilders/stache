@@ -1,8 +1,11 @@
-## Unreleased
+## Stache 2.1.0
 
 * Dropped support for GHC 8.0 and older.
 
 * Documentation improvements.
+
+* Added Template Haskell `Lift` instance for the `Template` type and its
+  sub-components.
 
 ## Stache 2.0.1
 
