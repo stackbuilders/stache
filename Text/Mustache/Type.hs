@@ -16,6 +16,7 @@
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings          #-}
+{-# LANGUAGE TemplateHaskell            #-}
 
 module Text.Mustache.Type
   ( Template (..)
@@ -34,12 +35,13 @@ import Data.Data (Data)
 import Data.Map (Map)
 import Data.String (IsString (..))
 import Data.Text (Text)
-import Data.Typeable (Typeable)
+import Data.Typeable (Typeable, cast)
 import Data.Void
 import GHC.Generics
 import Text.Megaparsec
 import qualified Data.Map  as M
 import qualified Data.Text as T
+import qualified Language.Haskell.TH.Syntax as TH
 
 #if !MIN_VERSION_base(4,11,0)
 import Data.Semigroup
@@ -65,6 +67,11 @@ data Template = Template
 instance Semigroup Template where
   (Template pname x) <> (Template _ y) = Template pname (M.union x y)
 
+-- | @since 2.1.0
+
+instance TH.Lift Template where
+  lift = liftData
+
 -- | Structural element of template.
 
 data Node
@@ -76,6 +83,11 @@ data Node
   | Partial         PName (Maybe Pos)
     -- ^ Partial with indentation level ('Nothing' means it was inlined)
   deriving (Eq, Ord, Show, Data, Typeable, Generic)
+
+-- | @since 2.1.0
+
+instance TH.Lift Node where
+  lift = liftData
 
 -- | Identifier for values to interpolate.
 --
@@ -89,6 +101,11 @@ newtype Key = Key { unKey :: [Text] }
   deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Typeable, Generic)
 
 instance NFData Key
+
+-- | @since 2.1.0
+
+instance TH.Lift Key where
+  lift = liftData
 
 -- | Pretty-print a key, this is helpful, for example, if you want to
 -- display an error message.
@@ -109,6 +126,11 @@ instance IsString PName where
   fromString = PName . T.pack
 
 instance NFData PName
+
+-- | @since 2.1.0
+
+instance TH.Lift PName where
+  lift = liftData
 
 -- | Exception that is thrown when parsing of a template fails or referenced
 -- values are not provided.
@@ -147,3 +169,12 @@ displayMustacheWarning (MustacheVariableNotFound key) =
   "Referenced value was not provided, key: " ++ T.unpack (showKey key)
 displayMustacheWarning (MustacheDirectlyRenderedValue key) =
   "Complex value rendered as such, key: " ++ T.unpack (showKey key)
+
+----------------------------------------------------------------------------
+-- TH lifting helpers
+
+liftData :: Data a => a -> TH.Q TH.Exp
+liftData = TH.dataToExpQ (fmap liftText . cast)
+
+liftText :: Text -> TH.Q TH.Exp
+liftText t = TH.AppE (TH.VarE 'T.pack) <$> TH.lift (T.unpack t)

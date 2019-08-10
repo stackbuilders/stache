@@ -14,7 +14,6 @@
 -- At the moment, functions in this module only work with GHC 8 (they
 -- require at least @template-haskell-2.11@).
 
-{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes        #-}
 {-# LANGUAGE TemplateHaskell   #-}
@@ -29,7 +28,6 @@ where
 
 import Control.Exception
 import Data.Text (Text)
-import Data.Typeable (cast)
 import Language.Haskell.TH hiding (Dec)
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Language.Haskell.TH.Syntax (lift, addDependentFile)
@@ -37,14 +35,6 @@ import System.Directory
 import Text.Mustache.Type
 import qualified Data.Text             as T
 import qualified Text.Mustache.Compile as C
-
-#if MIN_VERSION_template_haskell(2,11,0)
-import Language.Haskell.TH.Syntax (dataToExpQ)
-#else
-import Data.Data (Data)
-dataToExpQ :: Data a => (forall b. Data b => b -> Maybe (Q Exp)) -> a -> Q Exp
-dataToExpQ _ _ = fail "The feature requires at least GHC 8 to work"
-#endif
 
 -- | Compile all templates in specified directory and select one. Template
 -- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
@@ -128,7 +118,7 @@ handleEither :: Either MustacheException Template -> Q Exp
 handleEither val =
   case val of
     Left err -> (fail . indentNicely . displayException) err
-    Right template -> dataToExpQ (fmap liftText . cast) template
+    Right template -> lift template
   where
     -- NOTE Since the feature requires GHC 8 anyway, we follow the
     -- indentation style of that version of compiler. This makes it look
@@ -138,8 +128,3 @@ handleEither val =
       case lines x' of
         []     -> ""
         (x:xs) -> unlines (x : fmap (replicate 8 ' ' ++) xs)
-
--- | Lift strict 'T.Text' to 'Q' 'Exp'.
-
-liftText :: T.Text -> Q Exp
-liftText txt = AppE (VarE 'T.pack) <$> lift (T.unpack txt)
