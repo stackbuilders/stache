@@ -11,6 +11,7 @@
 -- import the module, because "Text.Mustache" re-exports everything you may
 -- need, import that module instead.
 
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.Parser
@@ -21,7 +22,6 @@ import Control.Monad
 import Control.Monad.State.Strict
 import Data.Char (isSpace, isAlphaNum)
 import Data.Maybe (catMaybes)
-import Data.Semigroup ((<>))
 import Data.Text (Text)
 import Data.Void
 import Text.Megaparsec
@@ -29,6 +29,10 @@ import Text.Megaparsec.Char
 import Text.Mustache.Type
 import qualified Data.Text                  as T
 import qualified Text.Megaparsec.Char.Lexer as L
+
+#if !MIN_VERSION_base(4,13,0)
+import Data.Semigroup ((<>))
+#endif
 
 ----------------------------------------------------------------------------
 -- Parser

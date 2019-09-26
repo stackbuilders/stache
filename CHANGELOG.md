@@ -1,3 +1,7 @@
+## Unreleased
+
+* Dropped support for GHC 8.2 and older.
+
 ## Stache 2.1.0
 
 * Dropped support for GHC 8.0 and older.

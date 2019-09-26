@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.ParserSpec
@@ -5,12 +6,15 @@ module Text.Mustache.ParserSpec
   , spec )
 where
 
-import Data.Semigroup ((<>))
 import Test.Hspec
 import Test.Hspec.Megaparsec
 import Text.Megaparsec
 import Text.Mustache.Parser
 import Text.Mustache.Type
+
+#if !MIN_VERSION_base(4,13,0)
+import Data.Semigroup ((<>))
+#endif
 
 main :: IO ()
 main = hspec spec
