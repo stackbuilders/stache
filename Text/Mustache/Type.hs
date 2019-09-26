@@ -11,7 +11,6 @@
 -- because "Text.Mustache" re-exports everything you may need, import that
 -- module instead.
 
-{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -42,10 +41,6 @@ import Text.Megaparsec
 import qualified Data.Map  as M
 import qualified Data.Text as T
 import qualified Language.Haskell.TH.Syntax as TH
-
-#if !MIN_VERSION_base(4,11,0)
-import Data.Semigroup
-#endif
 
 -- | Mustache template as name of “top-level” template and a collection of
 -- all available templates (partials).

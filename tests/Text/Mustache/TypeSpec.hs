@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.TypeSpec
@@ -5,10 +6,13 @@ module Text.Mustache.TypeSpec
   , spec )
 where
 
-import Data.Semigroup ((<>))
 import Test.Hspec
 import Text.Mustache.Type
 import qualified Data.Map as M
+
+#if !MIN_VERSION_base(4,13,0)
+import Data.Semigroup ((<>))
+#endif
 
 main :: IO ()
 main = hspec spec

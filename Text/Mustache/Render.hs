@@ -11,6 +11,7 @@
 -- import the module, because "Text.Mustache" re-exports everything you may
 -- need, import that module instead.
 
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.Render
@@ -24,7 +25,6 @@ import Data.Aeson
 import Data.Foldable (asum)
 import Data.List (tails)
 import Data.List.NonEmpty (NonEmpty (..))
-import Data.Semigroup ((<>))
 import Data.Text (Text)
 import Text.Megaparsec.Pos (Pos, unPos)
 import Text.Mustache.Type
@@ -37,6 +37,10 @@ import qualified Data.Text.Lazy          as TL
 import qualified Data.Text.Lazy.Builder  as B
 import qualified Data.Text.Lazy.Encoding as TL
 import qualified Data.Vector             as V
+
+#if !MIN_VERSION_base(4,13,0)
+import Data.Semigroup ((<>))
+#endif
 
 ----------------------------------------------------------------------------
 -- The rendering monad
