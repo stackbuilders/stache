@@ -7,11 +7,11 @@
 [![Build Status](https://travis-ci.org/stackbuilders/stache.svg?branch=master)](https://travis-ci.org/stackbuilders/stache)
 
 This is a Haskell implementation of Mustache templates. The implementation
-conforms to the version 1.1.3 of the
-official [Mustache specification](https://github.com/mustache/spec). It is
-extremely simple and straightforward to use with minimal but complete
-API—three functions to compile templates (from directory, from file, and
-from lazy text) and one to render them.
+conforms to the version 1.1.3 of the official [Mustache
+specification](https://github.com/mustache/spec). It is extremely simple and
+straightforward to use with minimal but complete API—three functions to
+compile templates (from directory, from file, and from lazy text) and one to
+render them.
 
 The implementation uses the Megaparsec parsing library to parse the
 templates which results in superior quality of error messages.
@@ -79,7 +79,7 @@ helpful:
 Issues, bugs, and questions may be reported in [the GitHub issue tracker for
 this project](https://github.com/stackbuilders/stache/issues).
 
-Pull requests are also welcome and will be reviewed quickly.
+Pull requests are also welcome.
 
 ## License
 
