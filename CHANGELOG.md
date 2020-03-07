@@ -1,5 +1,8 @@
 ## Unreleased
 
+* Fixed the bug related to incorrect indentation with nested partials.
+  [Issue 44](https://github.com/stackbuilders/stache/issues/44).
+
 * Dropped support for GHC 8.2 and older.
 
 ## Stache 2.1.0
