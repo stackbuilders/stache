@@ -138,6 +138,14 @@ spec = describe "renderMustache" $ do
                        , ("partial", [TextBlock "one\ntwo\nthree"]) ]
       in renderMustache template Null `shouldBe`
            "   one\n   two\n   three*"
+  context "when rendering a nested partial" $
+    it "renders outer partial correctly" $
+      let template = Template "outer" $
+            M.fromList [ ("inner",  [TextBlock "x"])
+                       , ("middle", [Partial "inner"  (Just $ mkPos 1)])
+                       , ("outer",  [Partial "middle" (Just $ mkPos 1)])
+                       ]
+      in renderMustache template Null `shouldBe` "x"
   context "when using dotted keys inside a section" $
     it "it should be equivalent to access via one more section" $
       r [ Section (key "things")

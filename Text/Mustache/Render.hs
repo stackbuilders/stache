@@ -26,12 +26,11 @@ import Data.Foldable (asum)
 import Data.List (tails)
 import Data.List.NonEmpty (NonEmpty (..))
 import Data.Text (Text)
-import Text.Megaparsec.Pos (Pos, unPos)
+import Text.Megaparsec.Pos (Pos, mkPos, unPos)
 import Text.Mustache.Type
 import qualified Data.HashMap.Strict     as H
 import qualified Data.List.NonEmpty      as NE
 import qualified Data.Map                as M
-import qualified Data.Semigroup          as S
 import qualified Data.Text               as T
 import qualified Data.Text.Lazy          as TL
 import qualified Data.Text.Lazy.Builder  as B
@@ -254,7 +253,7 @@ addIndents :: Maybe Pos -> Maybe Pos -> Maybe Pos
 addIndents Nothing  Nothing  = Nothing
 addIndents Nothing  (Just x) = Just x
 addIndents (Just x) Nothing  = Just x
-addIndents (Just x) (Just y) = Just (x S.<> y)
+addIndents (Just x) (Just y) = Just (mkPos $ unPos x + unPos y - 1)
 {-# INLINE addIndents #-}
 
 -- | Build indentation of specified length by repeating the space character.
