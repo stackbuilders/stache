@@ -1,4 +1,4 @@
-## Unreleased
+## Stache 2.1.1
 
 * Fixed the bug related to incorrect indentation with nested partials.
   [Issue 44](https://github.com/stackbuilders/stache/issues/44).
