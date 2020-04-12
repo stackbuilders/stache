@@ -11,6 +11,7 @@
 -- because "Text.Mustache" re-exports everything you may need, import that
 -- module instead.
 
+{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -66,6 +67,9 @@ instance Semigroup Template where
 
 instance TH.Lift Template where
   lift = liftData
+#if MIN_VERSION_template_haskell(2,16,0)
+  liftTyped = TH.unsafeTExpCoerce . TH.lift
+#endif
 
 -- | Structural element of template.
 
@@ -83,6 +87,9 @@ data Node
 
 instance TH.Lift Node where
   lift = liftData
+#if MIN_VERSION_template_haskell(2,16,0)
+  liftTyped = TH.unsafeTExpCoerce . TH.lift
+#endif
 
 -- | Identifier for values to interpolate.
 --
@@ -101,6 +108,9 @@ instance NFData Key
 
 instance TH.Lift Key where
   lift = liftData
+#if MIN_VERSION_template_haskell(2,16,0)
+  liftTyped = TH.unsafeTExpCoerce . TH.lift
+#endif
 
 -- | Pretty-print a key, this is helpful, for example, if you want to
 -- display an error message.
@@ -126,6 +136,9 @@ instance NFData PName
 
 instance TH.Lift PName where
   lift = liftData
+#if MIN_VERSION_template_haskell(2,16,0)
+  liftTyped = TH.unsafeTExpCoerce . TH.lift
+#endif
 
 -- | Exception that is thrown when parsing of a template fails or referenced
 -- values are not provided.
