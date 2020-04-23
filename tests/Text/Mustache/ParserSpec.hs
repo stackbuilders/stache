@@ -1,9 +1,10 @@
-{-# LANGUAGE CPP               #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Text.Mustache.ParserSpec
-  ( main
-  , spec )
+  ( main,
+    spec,
+  )
 where
 
 import Test.Hspec
@@ -49,44 +50,47 @@ spec = describe "parseMustache" $ do
     it "parses empty section" $
       p "{{#section}}{{/section}}" `shouldParse` [Section (key "section") []]
     it "parses non-empty section" $
-      p "{{# section }}Hi, {{name}}!\n{{/section}}" `shouldParse`
-        [Section (key "section")
-         [ TextBlock "Hi, "
-         , EscapedVar (key "name")
-         , TextBlock "!\n"]]
+      p "{{# section }}Hi, {{name}}!\n{{/section}}"
+        `shouldParse` [ Section
+                          (key "section")
+                          [ TextBlock "Hi, ",
+                            EscapedVar (key "name"),
+                            TextBlock "!\n"
+                          ]
+                      ]
   context "when parsing an inverted section" $ do
     it "parses empty inverted section" $
-      p "{{^section}}{{/section}}" `shouldParse`
-        [InvertedSection (key "section") []]
+      p "{{^section}}{{/section}}"
+        `shouldParse` [InvertedSection (key "section") []]
     it "parses non-empty inverted section" $
-      p "{{^ section }}No one here?!\n{{/section}}" `shouldParse`
-        [InvertedSection (key "section") [TextBlock "No one here?!\n"]]
+      p "{{^ section }}No one here?!\n{{/section}}"
+        `shouldParse` [InvertedSection (key "section") [TextBlock "No one here?!\n"]]
   context "when parsing a partial" $ do
     it "parses a partial with white space" $
-      p "{{> that-s_my-partial }}" `shouldParse`
-        [Partial "that-s_my-partial" (Just $ mkPos 1)]
+      p "{{> that-s_my-partial }}"
+        `shouldParse` [Partial "that-s_my-partial" (Just $ mkPos 1)]
     it "parses a partial without white space" $
-      p "{{>that-s_my-partial}}" `shouldParse`
-        [Partial "that-s_my-partial" (Just $ mkPos 1)]
+      p "{{>that-s_my-partial}}"
+        `shouldParse` [Partial "that-s_my-partial" (Just $ mkPos 1)]
     it "handles indented partial correctly" $
-      p "   {{> next_one }}" `shouldParse`
-        [Partial "next_one" (Just $ mkPos 4)]
+      p "   {{> next_one }}"
+        `shouldParse` [Partial "next_one" (Just $ mkPos 4)]
   context "when running into delimiter change" $ do
     it "has effect" $
-      p "{{=<< >>=}}<<var>>{{var}}" `shouldParse`
-        [EscapedVar (key "var"), TextBlock "{{var}}"]
+      p "{{=<< >>=}}<<var>>{{var}}"
+        `shouldParse` [EscapedVar (key "var"), TextBlock "{{var}}"]
     it "handles whitespace just as well" $
-      p "{{=<<   >>=}}<<  var >>{{ var  }}" `shouldParse`
-        [EscapedVar (key "var"), TextBlock "{{ var  }}"]
+      p "{{=<<   >>=}}<<  var >>{{ var  }}"
+        `shouldParse` [EscapedVar (key "var"), TextBlock "{{ var  }}"]
     it "affects {{{s" $
-      p "{{=<< >>=}}<<{var}>>" `shouldParse`
-        [UnescapedVar (key "var")]
+      p "{{=<< >>=}}<<{var}>>"
+        `shouldParse` [UnescapedVar (key "var")]
     it "parses two subsequent delimiter changes" $
-      p "{{=(( ))=}}(( var ))((=-- $-=))--#section$---/section$-" `shouldParse`
-        [EscapedVar (key "var"), Section (key "section") []]
+      p "{{=(( ))=}}(( var ))((=-- $-=))--#section$---/section$-"
+        `shouldParse` [EscapedVar (key "var"), Section (key "section") []]
     it "propagates delimiter change from a nested scope" $
-      p "{{#section}}{{=<< >>=}}<</section>><<var>>" `shouldParse`
-        [Section (key "section") [], EscapedVar (key "var")]
+      p "{{#section}}{{=<< >>=}}<</section>><<var>>"
+        `shouldParse` [Section (key "section") [], EscapedVar (key "var")]
   context "when given malformed input" $ do
     it "rejects unclosed tags" $ do
       let s = "{{ name "

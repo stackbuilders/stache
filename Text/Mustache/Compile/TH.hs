@@ -1,3 +1,7 @@
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 -- |
 -- Module      :  Text.Mustache.Compile.TH
 -- Copyright   :  © 2016–present Stack Builders
@@ -13,28 +17,24 @@
 --
 -- At the moment, functions in this module only work with GHC 8 (they
 -- require at least @template-haskell-2.11@).
-
-{-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE RankNTypes        #-}
-{-# LANGUAGE TemplateHaskell   #-}
-
 module Text.Mustache.Compile.TH
-  ( compileMustacheDir
-  , compileMustacheDir'
-  , compileMustacheFile
-  , compileMustacheText
-  , mustache )
+  ( compileMustacheDir,
+    compileMustacheDir',
+    compileMustacheFile,
+    compileMustacheText,
+    mustache,
+  )
 where
 
 import Control.Exception
 import Data.Text (Text)
+import qualified Data.Text as T
 import Language.Haskell.TH hiding (Dec)
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
-import Language.Haskell.TH.Syntax (lift, addDependentFile)
+import Language.Haskell.TH.Syntax (addDependentFile, lift)
 import System.Directory
-import Text.Mustache.Type
-import qualified Data.Text             as T
 import qualified Text.Mustache.Compile as C
+import Text.Mustache.Type
 
 -- | Compile all templates in specified directory and select one. Template
 -- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
@@ -43,11 +43,13 @@ import qualified Text.Mustache.Compile as C
 -- This version compiles the templates at compile time.
 --
 -- > compileMustacheDir = compileMustacheDir' isMustacheFile
-
-compileMustacheDir
-  :: PName             -- ^ Which template to select after compiling
-  -> FilePath          -- ^ Directory with templates
-  -> Q Exp             -- ^ The resulting template
+compileMustacheDir ::
+  -- | Which template to select after compiling
+  PName ->
+  -- | Directory with templates
+  FilePath ->
+  -- | The resulting template
+  Q Exp
 compileMustacheDir = compileMustacheDir' C.isMustacheFile
 
 -- | The same as 'compileMustacheDir', but allows using a custom predicate
@@ -56,12 +58,15 @@ compileMustacheDir = compileMustacheDir' C.isMustacheFile
 -- This version compiles the templates at compile time.
 --
 -- @since 1.2.0
-
-compileMustacheDir'
-  :: (FilePath -> Bool) -- ^ Template selection predicate
-  -> PName             -- ^ Which template to select after compiling
-  -> FilePath          -- ^ Directory with templates
-  -> Q Exp             -- ^ The resulting template
+compileMustacheDir' ::
+  -- | Template selection predicate
+  (FilePath -> Bool) ->
+  -- | Which template to select after compiling
+  PName ->
+  -- | Directory with templates
+  FilePath ->
+  -- | The resulting template
+  Q Exp
 compileMustacheDir' predicate pname path = do
   runIO (C.getMustacheFilesInDir' predicate path) >>= mapM_ addDependentFile
   (runIO . try) (C.compileMustacheDir' predicate pname path) >>= handleEither
@@ -69,10 +74,10 @@ compileMustacheDir' predicate pname path = do
 -- | Compile single Mustache template and select it.
 --
 -- This version compiles the template at compile time.
-
-compileMustacheFile
-  :: FilePath          -- ^ Location of the file
-  -> Q Exp
+compileMustacheFile ::
+  -- | Location of the file
+  FilePath ->
+  Q Exp
 compileMustacheFile path = do
   runIO (makeAbsolute path) >>= addDependentFile
   (runIO . try) (C.compileMustacheFile path) >>= handleEither
@@ -81,14 +86,15 @@ compileMustacheFile path = do
 -- only this template named according to given 'Key'.
 --
 -- This version compiles the template at compile time.
-
-compileMustacheText
-  :: PName             -- ^ How to name the template?
-  -> Text              -- ^ The template to compile
-  -> Q Exp
+compileMustacheText ::
+  -- | How to name the template?
+  PName ->
+  -- | The template to compile
+  Text ->
+  Q Exp
 compileMustacheText pname text =
   (handleEither . either (Left . MustacheParserException) Right)
-  (C.compileMustacheText pname text)
+    (C.compileMustacheText pname text)
 
 -- | Compile Mustache using QuasiQuoter. Usage:
 --
@@ -103,17 +109,17 @@ compileMustacheText pname text =
 -- with partials as usual.
 --
 -- @since 0.1.7
-
 mustache :: QuasiQuoter
-mustache = QuasiQuoter
-  { quoteExp  = compileMustacheText "quasi-quoted" . T.pack
-  , quotePat  = error "This usage is not supported."
-  , quoteType = error "This usage is not supported."
-  , quoteDec  = error "This usage is not supported." }
+mustache =
+  QuasiQuoter
+    { quoteExp = compileMustacheText "quasi-quoted" . T.pack,
+      quotePat = error "This usage is not supported.",
+      quoteType = error "This usage is not supported.",
+      quoteDec = error "This usage is not supported."
+    }
 
 -- | Given an 'Either' result return 'Right' and signal pretty-printed error
 -- if we have a 'Left'.
-
 handleEither :: Either MustacheException Template -> Q Exp
 handleEither val =
   case val of
@@ -126,5 +132,5 @@ handleEither val =
     -- tools to parse the errors correctly.
     indentNicely x' =
       case lines x' of
-        []     -> ""
-        (x:xs) -> unlines (x : fmap (replicate 8 ' ' ++) xs)
+        [] -> ""
+        (x : xs) -> unlines (x : fmap (replicate 8 ' ' ++) xs)

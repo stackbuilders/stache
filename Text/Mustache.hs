@@ -70,24 +70,26 @@
 --     * The manual: <https://mustache.github.io/mustache.5.html>
 --     * The specification: <https://github.com/mustache/spec>
 --     * Stack Builders Stache tutorial: <https://www.stackbuilders.com/tutorials/haskell/mustache-templates/>
-
 module Text.Mustache
   ( -- * Types
-    Template (..)
-  , Node (..)
-  , Key (..)
-  , PName (..)
-  , MustacheException (..)
-  , MustacheWarning (..)
-  , displayMustacheWarning
+    Template (..),
+    Node (..),
+    Key (..),
+    PName (..),
+    MustacheException (..),
+    MustacheWarning (..),
+    displayMustacheWarning,
+
     -- * Compiling
-  , compileMustacheDir
-  , compileMustacheDir'
-  , compileMustacheFile
-  , compileMustacheText
+    compileMustacheDir,
+    compileMustacheDir',
+    compileMustacheFile,
+    compileMustacheText,
+
     -- * Rendering
-  , renderMustache
-  , renderMustacheW )
+    renderMustache,
+    renderMustacheW,
+  )
 where
 
 import Text.Mustache.Compile

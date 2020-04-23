@@ -1,3 +1,6 @@
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE OverloadedStrings #-}
+
 -- |
 -- Module      :  Text.Mustache.Parser
 -- Copyright   :  © 2016–present Stack Builders
@@ -10,25 +13,22 @@
 -- Megaparsec parser for Mustache templates. You don't usually need to
 -- import the module, because "Text.Mustache" re-exports everything you may
 -- need, import that module instead.
-
-{-# LANGUAGE CPP               #-}
-{-# LANGUAGE OverloadedStrings #-}
-
 module Text.Mustache.Parser
-  ( parseMustache )
+  ( parseMustache,
+  )
 where
 
 import Control.Monad
 import Control.Monad.State.Strict
-import Data.Char (isSpace, isAlphaNum)
+import Data.Char (isAlphaNum, isSpace)
 import Data.Maybe (catMaybes)
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Void
 import Text.Megaparsec
 import Text.Megaparsec.Char
-import Text.Mustache.Type
-import qualified Data.Text                  as T
 import qualified Text.Megaparsec.Char.Lexer as L
+import Text.Mustache.Type
 
 #if !MIN_VERSION_base(4,13,0)
 import Data.Semigroup ((<>))
@@ -38,31 +38,32 @@ import Data.Semigroup ((<>))
 -- Parser
 
 -- | Parse a given Mustache template.
-
-parseMustache
-  :: FilePath
-     -- ^ Location of the file to parse
-  -> Text
-     -- ^ File contents (Mustache template)
-  -> Either (ParseErrorBundle Text Void) [Node]
-     -- ^ Parsed nodes or parse error
-parseMustache = parse $
-  evalStateT (pMustache eof) (St "{{" "}}" 0)
+parseMustache ::
+  -- | Location of the file to parse
+  FilePath ->
+  -- | File contents (Mustache template)
+  Text ->
+  -- | Parsed nodes or parse error
+  Either (ParseErrorBundle Text Void) [Node]
+parseMustache =
+  parse $
+    evalStateT (pMustache eof) (St "{{" "}}" 0)
 
 pMustache :: Parser () -> Parser [Node]
 pMustache = fmap catMaybes . manyTill (choice alts)
   where
     alts =
-      [ Nothing <$  withStandalone pComment
-      , Just    <$> pSection "#" Section
-      , Just    <$> pSection "^" InvertedSection
-      , Just    <$> pStandalone (pPartial Just)
-      , Just    <$> pPartial (const Nothing)
-      , Nothing <$  withStandalone pSetDelimiters
-      , Just    <$> pUnescapedVariable
-      , Just    <$> pUnescapedSpecial
-      , Just    <$> pEscapedVariable
-      , Just    <$> pTextBlock ]
+      [ Nothing <$ withStandalone pComment,
+        Just <$> pSection "#" Section,
+        Just <$> pSection "^" InvertedSection,
+        Just <$> pStandalone (pPartial Just),
+        Just <$> pPartial (const Nothing),
+        Nothing <$ withStandalone pSetDelimiters,
+        Just <$> pUnescapedVariable,
+        Just <$> pUnescapedSpecial,
+        Just <$> pEscapedVariable,
+        Just <$> pTextBlock
+      ]
 {-# INLINE pMustache #-}
 
 pTextBlock :: Parser Node
@@ -85,14 +86,14 @@ pUnescapedVariable = UnescapedVar <$> pTag "&"
 pUnescapedSpecial :: Parser Node
 pUnescapedSpecial = do
   start <- gets openingDel
-  end   <- gets closingDel
+  end <- gets closingDel
   between (symbol $ start <> "{") (string $ "}" <> end) $
     UnescapedVar <$> pKey
 {-# INLINE pUnescapedSpecial #-}
 
 pSection :: Text -> (Key -> [Node] -> Node) -> Parser Node
 pSection suffix f = do
-  key   <- withStandalone (pTag suffix)
+  key <- withStandalone (pTag suffix)
   nodes <- (pMustache . withStandalone . pClosingTag) key
   return (f key nodes)
 {-# INLINE pSection #-}
@@ -108,7 +109,7 @@ pPartial f = do
 pComment :: Parser ()
 pComment = void $ do
   start <- gets openingDel
-  end   <- gets closingDel
+  end <- gets closingDel
   (void . symbol) (start <> "!")
   manyTill (anySingle <?> "character") (string end)
 {-# INLINE pComment #-}
@@ -116,14 +117,16 @@ pComment = void $ do
 pSetDelimiters :: Parser ()
 pSetDelimiters = void $ do
   start <- gets openingDel
-  end   <- gets closingDel
+  end <- gets closingDel
   (void . symbol) (start <> "=")
   start' <- pDelimiter <* scn
-  end'   <- pDelimiter <* scn
+  end' <- pDelimiter <* scn
   (void . string) ("=" <> end)
-  modify' $ \st -> st { openingDel = start'
-                      , closingDel = end'
-                      }
+  modify' $ \st ->
+    st
+      { openingDel = start',
+        closingDel = end'
+      }
 {-# INLINE pSetDelimiters #-}
 
 pEscapedVariable :: Parser Node
@@ -141,14 +144,14 @@ pStandalone p = pBol *> try (between sc (sc <* (void eol' <|> eof)) p)
 pTag :: Text -> Parser Key
 pTag suffix = do
   start <- gets openingDel
-  end   <- gets closingDel
+  end <- gets closingDel
   between (symbol $ start <> suffix) (string end) pKey
 {-# INLINE pTag #-}
 
 pClosingTag :: Key -> Parser ()
 pClosingTag key = do
   start <- gets openingDel
-  end   <- gets closingDel
+  end <- gets closingDel
   let str = keyToText key
   void $ between (symbol $ start <> "/") (string end) (symbol str)
 {-# INLINE pClosingTag #-}
@@ -157,19 +160,20 @@ pKey :: Parser Key
 pKey = (fmap Key . lexeme . label "key") (implicit <|> other)
   where
     implicit = [] <$ char '.'
-    other    = sepBy1 (takeWhile1P (Just lbl) f) (char '.')
-    lbl      = "alphanumeric char or '-' or '_'"
-    f x      = isAlphaNum x || x == '-' || x == '_'
+    other = sepBy1 (takeWhile1P (Just lbl) f) (char '.')
+    lbl = "alphanumeric char or '-' or '_'"
+    f x = isAlphaNum x || x == '-' || x == '_'
 {-# INLINE pKey #-}
 
 pDelimiter :: Parser Text
 pDelimiter = takeWhile1P (Just "delimiter char") delChar <?> "delimiter"
-  where delChar x = not (isSpace x) && x /= '='
+  where
+    delChar x = not (isSpace x) && x /= '='
 {-# INLINE pDelimiter #-}
 
 pBol :: Parser ()
 pBol = do
-  o  <- getOffset
+  o <- getOffset
   o' <- gets newlineOffset
   unless (o == o') empty
 {-# INLINE pBol #-}
@@ -178,18 +182,16 @@ pBol = do
 -- Auxiliary types
 
 -- | Type of Mustache parser monad stack.
-
 type Parser = StateT St (Parsec Void Text)
 
 -- | State used in the parser.
-
 data St = St
-  { openingDel :: Text
-    -- ^ Opening delimiter
-  , closingDel :: Text
-    -- ^ Closing delimiter
-  , newlineOffset :: !Int
-    -- ^ The offset at which last newline character was parsed
+  { -- | Opening delimiter
+    openingDel :: Text,
+    -- | Closing delimiter
+    closingDel :: Text,
+    -- | The offset at which last newline character was parsed
+    newlineOffset :: !Int
   }
 
 ----------------------------------------------------------------------------
@@ -222,6 +224,6 @@ eol' :: Parser Text
 eol' = do
   x <- eol
   o <- getOffset
-  modify' (\st -> st { newlineOffset = o } )
+  modify' (\st -> st {newlineOffset = o})
   return x
 {-# INLINE eol' #-}

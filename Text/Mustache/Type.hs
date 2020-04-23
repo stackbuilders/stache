@@ -1,3 +1,10 @@
+{-# LANGUAGE CPP #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
+
 -- |
 -- Module      :  Text.Mustache.Type
 -- Copyright   :  © 2016–present Stack Buliders
@@ -10,38 +17,31 @@
 -- Types used in the package. You don't usually need to import the module,
 -- because "Text.Mustache" re-exports everything you may need, import that
 -- module instead.
-
-{-# LANGUAGE CPP                        #-}
-{-# LANGUAGE DeriveDataTypeable         #-}
-{-# LANGUAGE DeriveGeneric              #-}
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# LANGUAGE OverloadedStrings          #-}
-{-# LANGUAGE TemplateHaskell            #-}
-
 module Text.Mustache.Type
-  ( Template (..)
-  , Node (..)
-  , Key (..)
-  , showKey
-  , PName (..)
-  , MustacheException (..)
-  , MustacheWarning (..)
-  , displayMustacheWarning )
+  ( Template (..),
+    Node (..),
+    Key (..),
+    showKey,
+    PName (..),
+    MustacheException (..),
+    MustacheWarning (..),
+    displayMustacheWarning,
+  )
 where
 
 import Control.DeepSeq
-import Control.Exception (Exception(..))
+import Control.Exception (Exception (..))
 import Data.Data (Data)
 import Data.Map (Map)
+import qualified Data.Map as M
 import Data.String (IsString (..))
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Typeable (Typeable, cast)
 import Data.Void
 import GHC.Generics
-import Text.Megaparsec
-import qualified Data.Map  as M
-import qualified Data.Text as T
 import qualified Language.Haskell.TH.Syntax as TH
+import Text.Megaparsec
 
 -- | Mustache template as name of “top-level” template and a collection of
 -- all available templates (partials).
@@ -50,43 +50,47 @@ import qualified Language.Haskell.TH.Syntax as TH
 -- (and their caches) using the @('<>')@ operator, the resulting 'Template'
 -- will have the same currently selected template as the left one. Union of
 -- caches is also left-biased.
-
 data Template = Template
-  { templateActual :: PName
-    -- ^ Name of currently “selected” template (top-level one).
-  , templateCache  :: Map PName [Node]
-    -- ^ Collection of all templates that are available for interpolation
+  { -- | Name of currently “selected” template (top-level one).
+    templateActual :: PName,
+    -- | Collection of all templates that are available for interpolation
     -- (as partials). The top-level one is also contained here and the
     -- “focus” can be switched easily by modifying 'templateActual'.
-  } deriving (Eq, Ord, Show, Data, Typeable, Generic)
+    templateCache :: Map PName [Node]
+  }
+  deriving (Eq, Ord, Show, Data, Typeable, Generic)
 
 instance Semigroup Template where
   (Template pname x) <> (Template _ y) = Template pname (M.union x y)
 
 -- | @since 2.1.0
-
 instance TH.Lift Template where
   lift = liftData
+
 #if MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
 -- | Structural element of template.
-
 data Node
-  = TextBlock       Text       -- ^ Plain text contained between tags
-  | EscapedVar      Key        -- ^ HTML-escaped variable
-  | UnescapedVar    Key        -- ^ Unescaped variable
-  | Section         Key [Node] -- ^ Mustache section
-  | InvertedSection Key [Node] -- ^ Inverted section
-  | Partial         PName (Maybe Pos)
-    -- ^ Partial with indentation level ('Nothing' means it was inlined)
+  = -- | Plain text contained between tags
+    TextBlock Text
+  | -- | HTML-escaped variable
+    EscapedVar Key
+  | -- | Unescaped variable
+    UnescapedVar Key
+  | -- | Mustache section
+    Section Key [Node]
+  | -- | Inverted section
+    InvertedSection Key [Node]
+  | -- | Partial with indentation level ('Nothing' means it was inlined)
+    Partial PName (Maybe Pos)
   deriving (Eq, Ord, Show, Data, Typeable, Generic)
 
 -- | @since 2.1.0
-
 instance TH.Lift Node where
   lift = liftData
+
 #if MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
@@ -98,16 +102,15 @@ instance TH.Lift Node where
 --     * @[]@—empty list means implicit iterators;
 --     * @[text]@—single key is a normal identifier;
 --     * @[text1, text2]@—multiple keys represent dotted names.
-
-newtype Key = Key { unKey :: [Text] }
+newtype Key = Key {unKey :: [Text]}
   deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Typeable, Generic)
 
 instance NFData Key
 
 -- | @since 2.1.0
-
 instance TH.Lift Key where
   lift = liftData
+
 #if MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
@@ -116,15 +119,13 @@ instance TH.Lift Key where
 -- display an error message.
 --
 -- @since 0.2.0
-
 showKey :: Key -> Text
 showKey (Key []) = "<implicit>"
 showKey (Key xs) = T.intercalate "." xs
 
 -- | Identifier for partials. Note that with the @OverloadedStrings@
 -- extension you can use just string literals to create values of this type.
-
-newtype PName = PName { unPName :: Text }
+newtype PName = PName {unPName :: Text}
   deriving (Eq, Ord, Show, Data, Typeable, Generic)
 
 instance IsString PName where
@@ -133,23 +134,22 @@ instance IsString PName where
 instance NFData PName
 
 -- | @since 2.1.0
-
 instance TH.Lift PName where
   lift = liftData
+
 #if MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
 -- | Exception that is thrown when parsing of a template fails or referenced
 -- values are not provided.
-
 newtype MustacheException
-  = MustacheParserException (ParseErrorBundle Text Void)
-    -- ^ Template parser has failed. This contains the parse error.
+  = -- | Template parser has failed. This contains the parse error.
     --
     -- /Before version 0.2.0 it was called 'MustacheException'./
     --
     -- /The 'Text' field was added in version 1.0.0./
+    MustacheParserException (ParseErrorBundle Text Void)
   deriving (Eq, Show, Typeable, Generic)
 
 instance Exception MustacheException where
@@ -158,20 +158,18 @@ instance Exception MustacheException where
 -- | Warning that may be generated during rendering of a 'Template'.
 --
 -- @since 1.1.1
-
 data MustacheWarning
-  = MustacheVariableNotFound Key
-    -- ^ The template contained a variable for which there was no data
+  = -- | The template contained a variable for which there was no data
     -- counterpart in the current context.
-  | MustacheDirectlyRenderedValue Key
-    -- ^ A complex value such as an 'Object' or 'Array' was directly
+    MustacheVariableNotFound Key
+  | -- | A complex value such as an 'Object' or 'Array' was directly
     -- rendered into the template.
+    MustacheDirectlyRenderedValue Key
   deriving (Eq, Show, Typeable, Generic)
 
 -- | Pretty-print a 'MustacheWarning'.
 --
 -- @since 1.1.1
-
 displayMustacheWarning :: MustacheWarning -> String
 displayMustacheWarning (MustacheVariableNotFound key) =
   "Referenced value was not provided, key: " ++ T.unpack (showKey key)
