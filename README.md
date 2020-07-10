@@ -4,7 +4,7 @@
 [![Hackage](https://img.shields.io/hackage/v/stache.svg?style=flat)](https://hackage.haskell.org/package/stache)
 [![Stackage Nightly](http://stackage.org/package/stache/badge/nightly)](http://stackage.org/nightly/package/stache)
 [![Stackage LTS](http://stackage.org/package/stache/badge/lts)](http://stackage.org/lts/package/stache)
-[![Build Status](https://travis-ci.org/stackbuilders/stache.svg?branch=master)](https://travis-ci.org/stackbuilders/stache)
+![CI](https://github.com/stackbuilders/stache/workflows/CI/badge.svg?branch=master)
 
 This is a Haskell implementation of Mustache templates. The implementation
 conforms to the version 1.1.3 of the official [Mustache
