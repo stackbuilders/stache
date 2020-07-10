@@ -20,29 +20,27 @@ main = hspec spec
 
 spec :: Spec
 spec = do
-  describe "Template instances"
-    $ context "the Semigroup instance"
-    $ do
-      it "the resulting template inherits focus of the left one" $
-        templateActual (templateA <> templateB)
-          `shouldBe` templateActual templateA
-      it "the resulting template merges caches with left bias" $
-        templateCache (templateA <> templateB)
-          `shouldBe` M.fromList
-            [ ("c", [TextBlock "foo"]),
-              ("d", [TextBlock "bar"]),
-              ("e", [TextBlock "baz"])
-            ]
+  describe "Template instances" $
+    context "the Semigroup instance" $ do
+        it "the resulting template inherits focus of the left one" $
+          templateActual (templateA <> templateB)
+            `shouldBe` templateActual templateA
+        it "the resulting template merges caches with left bias" $
+          templateCache (templateA <> templateB)
+            `shouldBe` M.fromList
+              [ ("c", [TextBlock "foo"]),
+                ("d", [TextBlock "bar"]),
+                ("e", [TextBlock "baz"])
+              ]
   describe "showKey" $ do
-    context "when the key has no elements in it"
-      $ it "is rendered correctly"
-      $ showKey (Key []) `shouldBe` "<implicit>"
-    context "when the key has some elements"
-      $ it "is rendered correctly"
-      $ do
-        showKey (Key ["boo"]) `shouldBe` "boo"
-        showKey (Key ["foo", "bar"]) `shouldBe` "foo.bar"
-        showKey (Key ["baz", "baz", "quux"]) `shouldBe` "baz.baz.quux"
+    context "when the key has no elements in it" $
+      it "is rendered correctly" $
+        showKey (Key []) `shouldBe` "<implicit>"
+    context "when the key has some elements" $
+      it "is rendered correctly" $ do
+          showKey (Key ["boo"]) `shouldBe` "boo"
+          showKey (Key ["foo", "bar"]) `shouldBe` "foo.bar"
+          showKey (Key ["baz", "baz", "quux"]) `shouldBe` "baz.baz.quux"
   describe "displayMustacheWarning" $ do
     it "renders “not found” warning correctly" $
       displayMustacheWarning (MustacheVariableNotFound (Key ["foo"]))

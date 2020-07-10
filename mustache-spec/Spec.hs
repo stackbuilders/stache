@@ -8,7 +8,7 @@ import Control.Monad
 import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.FileEmbed (embedFile)
-import Data.Map ((!), Map)
+import Data.Map (Map, (!))
 import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T
