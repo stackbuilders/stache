@@ -1,3 +1,7 @@
+## Stache 2.2.0
+
+* Added the executable program.
+
 ## Stache 2.1.1
 
 * Fixed the bug related to incorrect indentation with nested partials.
