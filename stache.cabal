@@ -75,7 +75,7 @@ executable stache
         aeson >=0.11 && <1.6,
         base >=4.12 && <5.0,
         gitrev >=1.3 && <1.4,
-        optparse-applicative >=0.14 && <0.16,
+        optparse-applicative >=0.14 && <0.17,
         stache >=2.0 && <3.0,
         text >=0.2 && <1.3,
         unordered-containers >=0.2.5 && <0.3,
