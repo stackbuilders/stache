@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
@@ -13,10 +12,6 @@ import qualified Data.Map as M
 import Test.Hspec
 import qualified Text.Mustache.Compile.TH as TH
 import Text.Mustache.Type
-
-#if !MIN_VERSION_base(4,13,0)
-import Data.Semigroup ((<>))
-#endif
 
 main :: IO ()
 main = hspec spec

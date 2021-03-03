@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 -- |
@@ -36,10 +35,6 @@ import qualified Data.Text.Lazy.Encoding as TL
 import qualified Data.Vector as V
 import Text.Megaparsec.Pos (Pos, mkPos, unPos)
 import Text.Mustache.Type
-
-#if !MIN_VERSION_base(4,13,0)
-import Data.Semigroup ((<>))
-#endif
 
 ----------------------------------------------------------------------------
 -- The rendering monad

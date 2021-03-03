@@ -67,7 +67,9 @@ instance Semigroup Template where
 instance TH.Lift Template where
   lift = liftData
 
-#if MIN_VERSION_template_haskell(2,16,0)
+#if MIN_VERSION_template_haskell(2,17,0)
+  liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
+#elif MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
@@ -91,7 +93,9 @@ data Node
 instance TH.Lift Node where
   lift = liftData
 
-#if MIN_VERSION_template_haskell(2,16,0)
+#if MIN_VERSION_template_haskell(2,17,0)
+  liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
+#elif MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
@@ -111,7 +115,9 @@ instance NFData Key
 instance TH.Lift Key where
   lift = liftData
 
-#if MIN_VERSION_template_haskell(2,16,0)
+#if MIN_VERSION_template_haskell(2,17,0)
+  liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
+#elif MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
@@ -137,7 +143,9 @@ instance NFData PName
 instance TH.Lift PName where
   lift = liftData
 
-#if MIN_VERSION_template_haskell(2,16,0)
+#if MIN_VERSION_template_haskell(2,17,0)
+  liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
+#elif MIN_VERSION_template_haskell(2,16,0)
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
@@ -179,8 +187,20 @@ displayMustacheWarning (MustacheDirectlyRenderedValue key) =
 ----------------------------------------------------------------------------
 -- TH lifting helpers
 
-liftData :: Data a => a -> TH.Q TH.Exp
+liftData
+
+#if MIN_VERSION_template_haskell(2,17,0)
+  :: (Data a, TH.Quote m) => a -> m TH.Exp
+#else
+  :: Data a => a -> TH.Q TH.Exp
+#endif
 liftData = TH.dataToExpQ (fmap liftText . cast)
 
-liftText :: Text -> TH.Q TH.Exp
+liftText
+
+#if MIN_VERSION_template_haskell(2,17,0)
+  :: TH.Quote m => Text -> m TH.Exp
+#else
+  :: Text -> TH.Q TH.Exp
+#endif
 liftText t = TH.AppE (TH.VarE 'T.pack) <$> TH.lift (T.unpack t)
