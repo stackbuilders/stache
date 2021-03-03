@@ -1,3 +1,7 @@
+## Stache 2.2.1
+
+* Works with GHC 9.0.1, dropped support for GHC 8.6.x and older.
+
 ## Stache 2.2.0
 
 * Added the executable program.
