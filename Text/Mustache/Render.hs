@@ -39,9 +39,9 @@ import Text.Mustache.Type
 ----------------------------------------------------------------------------
 -- The rendering monad
 
--- | Synonym for the monad we use for rendering. It allows to share context
--- and accumulate the result as 'B.Builder' data which is then turned into a
--- lazy 'TL.Text'.
+-- | Synonym for the monad we use for rendering. It allows us to share
+-- context and accumulate the result as 'B.Builder' data which is then
+-- turned into a lazy 'TL.Text'.
 type Render a = ReaderT RenderContext (State S) a
 
 data S = S ([MustacheWarning] -> [MustacheWarning]) B.Builder

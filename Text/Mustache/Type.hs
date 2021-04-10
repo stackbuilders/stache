@@ -43,17 +43,17 @@ import GHC.Generics
 import qualified Language.Haskell.TH.Syntax as TH
 import Text.Megaparsec
 
--- | Mustache template as name of “top-level” template and a collection of
--- all available templates (partials).
+-- | Mustache template as the name of the “top-level” template and a
+-- collection of all available templates (partials).
 --
 -- 'Template' is a 'Semigroup'. This means that you can combine 'Template's
 -- (and their caches) using the @('<>')@ operator, the resulting 'Template'
 -- will have the same currently selected template as the left one. Union of
 -- caches is also left-biased.
 data Template = Template
-  { -- | Name of currently “selected” template (top-level one).
+  { -- | The name of the currently “selected” template.
     templateActual :: PName,
-    -- | Collection of all templates that are available for interpolation
+    -- | A collection of all templates that are available for interpolation
     -- (as partials). The top-level one is also contained here and the
     -- “focus” can be switched easily by modifying 'templateActual'.
     templateCache :: Map PName [Node]
@@ -73,7 +73,7 @@ instance TH.Lift Template where
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
--- | Structural element of template.
+-- | A structural element of a template.
 data Node
   = -- | Plain text contained between tags
     TextBlock Text
@@ -121,7 +121,7 @@ instance TH.Lift Key where
   liftTyped = TH.unsafeTExpCoerce . TH.lift
 #endif
 
--- | Pretty-print a key, this is helpful, for example, if you want to
+-- | Pretty-print a key. This is helpful, for example, if you want to
 -- display an error message.
 --
 -- @since 0.2.0
@@ -167,8 +167,8 @@ instance Exception MustacheException where
 --
 -- @since 1.1.1
 data MustacheWarning
-  = -- | The template contained a variable for which there was no data
-    -- counterpart in the current context.
+  = -- | The template contained a variable for which there was no data in
+    -- the current context.
     MustacheVariableNotFound Key
   | -- | A complex value such as an 'Object' or 'Array' was directly
     -- rendered into the template.

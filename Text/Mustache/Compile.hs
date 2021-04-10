@@ -34,9 +34,10 @@ import Text.Megaparsec
 import Text.Mustache.Parser
 import Text.Mustache.Type
 
--- | Compile all templates in specified directory and select one. Template
--- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
--- recognized. This function /does not/ scan the directory recursively.
+-- | Compile all templates in the specified directory and select one.
+-- Template files should have the extension @mustache@, (e.g.
+-- @foo.mustache@) to be recognized. This function /does not/ scan the
+-- directory recursively.
 --
 -- Note that each template\/partial will get an identifier which consists of
 -- the name of corresponding template file with extension @.mustache@
@@ -80,8 +81,8 @@ compileMustacheDir' predicate pname path =
       Template _ new <- compileMustacheFile fp
       return (Template undefined (M.union new old))
 
--- | Return a list of templates found in given directory. The returned paths
--- are absolute.
+-- | Return a list of templates found in given a directory. The returned
+-- paths are absolute.
 --
 -- @since 0.2.2
 getMustacheFilesInDir ::
@@ -91,8 +92,8 @@ getMustacheFilesInDir ::
   m [FilePath]
 getMustacheFilesInDir = getMustacheFilesInDir' isMustacheFile
 
--- | Return a list of templates found via a predicate in given directory.
--- The returned paths are absolute.
+-- | Return a list of templates that satisfy a predicate in a given
+-- directory. The returned paths are absolute.
 --
 -- @since 1.2.0
 getMustacheFilesInDir' ::
@@ -116,7 +117,7 @@ getMustacheFilesInDir' predicate path =
 isMustacheFile :: FilePath -> Bool
 isMustacheFile path = F.takeExtension path == ".mustache"
 
--- | Compile a single Mustache template and select it.
+-- | Compile a Mustache template and select it.
 --
 -- The action can throw 'MustacheParserException' and the same exceptions as
 -- 'T.readFile'.
@@ -132,7 +133,7 @@ compileMustacheFile path = liftIO $ do
     pname = pathToPName path
     compile = fmap (Template pname . M.singleton pname) . parseMustache path
 
--- | Compile Mustache template from a lazy 'Text' value. The cache will
+-- | Compile a Mustache template from a lazy 'Text' value. The cache will
 -- contain only this template named according to given 'PName'.
 compileMustacheText ::
   -- | How to name the template?
@@ -147,12 +148,12 @@ compileMustacheText pname txt =
 ----------------------------------------------------------------------------
 -- Helpers
 
--- | Build a 'PName' from given 'FilePath'.
+-- | Build a 'PName' from a given 'FilePath'.
 pathToPName :: FilePath -> PName
 pathToPName = PName . T.pack . F.takeBaseName
 
--- | Throw 'MustacheException' if argument is 'Left' or return the result
--- inside 'Right'.
+-- | Throw 'MustacheException' if the argument is 'Left' or return the
+-- result inside 'Right'.
 withException ::
   -- | Value to process
   Either (ParseErrorBundle Text Void) Template ->

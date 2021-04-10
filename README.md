@@ -8,22 +8,20 @@
 
 This is a Haskell implementation of Mustache templates. The implementation
 conforms to the version 1.1.3 of the official [Mustache
-specification](https://github.com/mustache/spec). It is extremely simple and
-straightforward to use with minimal but complete API—three functions to
-compile templates (from directory, from file, and from lazy text) and one to
-render them.
+specification](https://github.com/mustache/spec). It has a minimal but
+complete API—three functions to compile templates (from directory, from
+file, and from lazy text) and one to render them.
 
 The implementation uses the Megaparsec parsing library to parse the
-templates which results in superior quality of error messages.
+templates which results in high-quality error messages.
 
-For rendering you only need to create Aeson's `Value` where you put the data
-to interpolate. Since the library re-uses Aeson's instances and most data
-types in the Haskell ecosystem are instances of classes like
-`Data.Aeson.ToJSON`, the whole process is very simple for the end user.
+For rendering one only needs to create Aeson's `Value` that is used for
+interpolation of template variables. Since the library re-uses Aeson's
+instances and most data types in the Haskell ecosystem are instances of
+classes like `Data.Aeson.ToJSON`, the process is simple for the end user.
 
 Template Haskell helpers for compilation of templates at compile time are
-available in the `Text.Mustache.Compile.TH` module. The helpers currently
-work only with GHC 8 and later.
+available in the `Text.Mustache.Compile.TH` module.
 
 One feature that is not currently supported is lambdas. The feature is
 marked as optional in the spec and can be emulated via processing of parsed

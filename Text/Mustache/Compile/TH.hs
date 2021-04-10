@@ -14,9 +14,6 @@
 -- Template Haskell helpers to compile Mustache templates at compile time.
 -- This module is not imported as part of "Text.Mustache", so you need to
 -- import it yourself. Qualified import is recommended, but not necessary.
---
--- At the moment, functions in this module only work with GHC 8 (they
--- require at least @template-haskell-2.11@).
 module Text.Mustache.Compile.TH
   ( compileMustacheDir,
     compileMustacheDir',
@@ -36,9 +33,10 @@ import System.Directory
 import qualified Text.Mustache.Compile as C
 import Text.Mustache.Type
 
--- | Compile all templates in specified directory and select one. Template
--- files should have the extension @mustache@, (e.g. @foo.mustache@) to be
--- recognized. This function /does not/ scan the directory recursively.
+-- | Compile all templates in the specified directory and select one.
+-- Template files should have the extension @mustache@, (e.g.
+-- @foo.mustache@) to be recognized. This function /does not/ scan the
+-- directory recursively.
 --
 -- This version compiles the templates at compile time.
 --
@@ -71,7 +69,7 @@ compileMustacheDir' predicate pname path = do
   runIO (C.getMustacheFilesInDir' predicate path) >>= mapM_ addDependentFile
   (runIO . try) (C.compileMustacheDir' predicate pname path) >>= handleEither
 
--- | Compile single Mustache template and select it.
+-- | Compile a Mustache template and select it.
 --
 -- This version compiles the template at compile time.
 compileMustacheFile ::
@@ -82,7 +80,7 @@ compileMustacheFile path = do
   runIO (makeAbsolute path) >>= addDependentFile
   (runIO . try) (C.compileMustacheFile path) >>= handleEither
 
--- | Compile Mustache template from 'Text' value. The cache will contain
+-- | Compile a Mustache template from 'Text' value. The cache will contain
 -- only this template named according to given 'Key'.
 --
 -- This version compiles the template at compile time.
@@ -96,7 +94,7 @@ compileMustacheText pname text =
   (handleEither . either (Left . MustacheParserException) Right)
     (C.compileMustacheText pname text)
 
--- | Compile Mustache using QuasiQuoter. Usage:
+-- | Compile a Mustache using a QuasiQuoter. Usage:
 --
 -- > {-# LANGUAGE QuasiQuotes #-}
 -- > import Text.Mustache.Compile.TH (mustache)
@@ -126,10 +124,6 @@ handleEither val =
     Left err -> (fail . indentNicely . displayException) err
     Right template -> lift template
   where
-    -- NOTE Since the feature requires GHC 8 anyway, we follow the
-    -- indentation style of that version of compiler. This makes it look
-    -- consistent with other error messages and allows Emacs and similar
-    -- tools to parse the errors correctly.
     indentNicely x' =
       case lines x' of
         [] -> ""
