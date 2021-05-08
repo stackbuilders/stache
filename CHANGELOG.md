@@ -1,3 +1,8 @@
+## Stache 2.3.0
+
+* Allowed parsing a wider range of keys in the templates thus making the
+  library's behavior closer to other existing implementations.
+
 ## Stache 2.2.1
 
 * Works with GHC 9.0.1, dropped support for GHC 8.6.x and older.
