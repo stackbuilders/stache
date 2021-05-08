@@ -30,6 +30,10 @@ spec = describe "parseMustache" $ do
         p "{{{ name }}}" `shouldParse` [UnescapedVar (key "name")]
       it "parses unescaped {{& variable }}" $
         p "{{& name }}" `shouldParse` [UnescapedVar (key "name")]
+      it "parses escaped {{ nested.variable }}" $
+        p "{{ a.b }}" `shouldParse` [EscapedVar (Key ["a", "b"])]
+      it "parses escaped {{ nested . variable . with . spaces }}" $
+        p "{{   a . b . c   }}" `shouldParse` [EscapedVar (Key ["a ", " b ", " c"])]
     context "without white space" $ do
       it "parses escaped {{variable}}" $
         p "{{name}}" `shouldParse` [EscapedVar (key "name")]
@@ -87,9 +91,10 @@ spec = describe "parseMustache" $ do
       p "{{#section}}{{=<< >>=}}<</section>><<var>>"
         `shouldParse` [Section (key "section") [], EscapedVar (key "var")]
   context "when given malformed input" $ do
+    let keyConstErr = "key-constituent characters"
     it "rejects unclosed tags" $ do
       let s = "{{ name "
-      p s `shouldFailWith` err 8 (ueof <> etoks "}}")
-    it "rejects unknown tags" $ do
-      let s = "{{? boo }}"
-      p s `shouldFailWith` err 2 (utoks "?" <> elabel "key")
+      p s `shouldFailWith` err 8 (ueof <> etoks "}}" <> etok '.' <> elabel keyConstErr)
+    it "rejects il-formed expressions" $ do
+      let s = "{{ foo..bar }}"
+      p s `shouldFailWith` err 7 (utoks "." <> elabel keyConstErr)

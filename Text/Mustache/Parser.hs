@@ -19,9 +19,9 @@ where
 
 import Control.Monad
 import Control.Monad.State.Strict
-import Data.Char (isAlphaNum, isSpace)
+import Data.Char (isSpace)
 import Data.Maybe (catMaybes)
-import Data.Text (Text)
+import Data.Text (Text, stripEnd)
 import qualified Data.Text as T
 import Data.Void
 import Text.Megaparsec
@@ -155,9 +155,14 @@ pKey :: Parser Key
 pKey = (fmap Key . lexeme . label "key") (implicit <|> other)
   where
     implicit = [] <$ char '.'
-    other = sepBy1 (takeWhile1P (Just lbl) f) (char '.')
-    lbl = "alphanumeric char or '-' or '_'"
-    f x = isAlphaNum x || x == '-' || x == '_'
+    other = do
+      end <- gets closingDel
+      let f x = x `notElem` ('.' : '}' : T.unpack end)
+          lbl = "key-constituent characters"
+      stripLast <$> sepBy1 (takeWhile1P (Just lbl) f) (char '.')
+    stripLast [] = []
+    stripLast [x] = [stripEnd x]
+    stripLast (x0 : x1 : xs) = x0 : stripLast (x1 : xs)
 {-# INLINE pKey #-}
 
 pDelimiter :: Parser Text
