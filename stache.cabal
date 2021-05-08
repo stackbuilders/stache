@@ -1,6 +1,6 @@
 cabal-version:   1.18
 name:            stache
-version:         2.2.1
+version:         2.3.0
 license:         BSD3
 license-file:    LICENSE.md
 maintainer:      Mark Karpov <markkarpov92@gmail.com>
