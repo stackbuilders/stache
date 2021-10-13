@@ -5,7 +5,7 @@ module Main (main) where
 
 import Data.Aeson (Value (..))
 import qualified Data.Aeson as Aeson
-import qualified Data.HashMap.Strict as HM
+import qualified Data.Aeson.KeyMap as Aeson.KeyMap
 import Data.List (foldl')
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
@@ -123,7 +123,7 @@ loadContext file = do
 
 mergeContexts :: Value -> Value -> Value
 mergeContexts (Aeson.Object m0) (Aeson.Object m1) =
-  Aeson.Object (HM.union m0 m1)
+  Aeson.Object (Aeson.KeyMap.union m0 m1)
 mergeContexts _ _ = error "context merge failed"
 
 emptyContext :: Value
