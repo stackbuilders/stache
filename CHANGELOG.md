@@ -1,3 +1,7 @@
+## Stache 2.3.1
+
+* Uses `aeson-2.x.x.x`.
+
 ## Stache 2.3.0
 
 * Allowed parsing a wider range of keys in the templates thus making the

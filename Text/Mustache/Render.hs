@@ -20,9 +20,10 @@ where
 
 import Control.Monad.Reader
 import Control.Monad.State.Strict (State, execState, modify')
-import Data.Aeson
+import Data.Aeson hiding (Key)
+import qualified Data.Aeson.Key as Aeson.Key
+import qualified Data.Aeson.KeyMap as Aeson.KeyMap
 import Data.Foldable (asum)
-import qualified Data.HashMap.Strict as H
 import Data.List (tails)
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NE
@@ -211,7 +212,7 @@ simpleLookup ::
   Maybe Value
 simpleLookup _ (Key []) obj = return obj
 simpleLookup c (Key (k : ks)) (Object m) =
-  case H.lookup k m of
+  case Aeson.KeyMap.lookup (Aeson.Key.fromText k) m of
     Nothing -> if c then Just Null else Nothing
     Just v -> simpleLookup True (Key ks) v
 simpleLookup _ _ _ = Nothing
@@ -259,7 +260,7 @@ buildIndent (Just p) = let n = fromIntegral (unPos p) - 1 in T.replicate n " "
 isBlank :: Value -> Bool
 isBlank Null = True
 isBlank (Bool False) = True
-isBlank (Object m) = H.null m
+isBlank (Object m) = Aeson.KeyMap.null m
 isBlank (Array a) = V.null a
 isBlank (String s) = T.null s
 isBlank _ = False
