@@ -89,17 +89,17 @@ executable stache
         ghc-options: -O2 -Wall
 
 test-suite tests
-    type:             exitcode-stdio-1.0
-    main-is:          Spec.hs
-    build-tools:      hspec-discover >=2.0 && <3.0
-    hs-source-dirs:   tests
+    type:               exitcode-stdio-1.0
+    main-is:            Spec.hs
+    build-tool-depends: hspec-discover:hspec-discover >=2.0 && <3.0
+    hs-source-dirs:     tests
     other-modules:
         Text.Mustache.Compile.THSpec
         Text.Mustache.ParserSpec
         Text.Mustache.RenderSpec
         Text.Mustache.TypeSpec
 
-    default-language: Haskell2010
+    default-language:   Haskell2010
     build-depends:
         aeson >=2 && <3,
         base >=4.13 && <5.0,

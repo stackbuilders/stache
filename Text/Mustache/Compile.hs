@@ -22,7 +22,8 @@ module Text.Mustache.Compile
 where
 
 import Control.Exception
-import Control.Monad.Except
+import Control.Monad (filterM, foldM)
+import Control.Monad.IO.Class (MonadIO (..))
 import qualified Data.Map as M
 import Data.Text (Text)
 import qualified Data.Text as T

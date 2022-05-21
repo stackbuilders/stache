@@ -1,3 +1,7 @@
+## Stache 2.3.2
+
+* Builds with `mtl-2.3`.
+
 ## Stache 2.3.1
 
 * Uses `aeson-2.x.x.x`.
