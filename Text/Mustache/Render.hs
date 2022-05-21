@@ -18,7 +18,8 @@ module Text.Mustache.Render
   )
 where
 
-import Control.Monad.Reader
+import Control.Monad (forM_, unless, when)
+import Control.Monad.Reader (MonadReader (local), ReaderT (runReaderT), asks)
 import Control.Monad.State.Strict (State, execState, modify')
 import Data.Aeson hiding (Key)
 import qualified Data.Aeson.Key as Aeson.Key
