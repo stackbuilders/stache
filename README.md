@@ -1,6 +1,5 @@
 # Stache
 
-[![License BSD3](https://img.shields.io/badge/license-BSD3-brightgreen.svg)](http://opensource.org/licenses/BSD-3-Clause)
 [![Hackage](https://img.shields.io/hackage/v/stache.svg?style=flat)](https://hackage.haskell.org/package/stache)
 [![Stackage Nightly](http://stackage.org/package/stache/badge/nightly)](http://stackage.org/nightly/package/stache)
 [![Stackage LTS](http://stackage.org/package/stache/badge/lts)](http://stackage.org/lts/package/stache)
@@ -28,7 +27,7 @@ marked as optional in the spec and can be emulated via processing of parsed
 template representation. The decision to drop lambdas is intentional, for
 the sake of simplicity and better integration with Aeson.
 
-## Quick start
+## Usage
 
 Here is an example of basic usage:
 
@@ -72,15 +71,14 @@ helpful:
 * The specification: https://github.com/mustache/spec
 * Stack Builders Stache tutorial: https://www.stackbuilders.com/tutorials/haskell/mustache-templates/
 
-## Contribution
-
-Issues, bugs, and questions may be reported in [the GitHub issue tracker for
-this project](https://github.com/stackbuilders/stache/issues).
-
-Pull requests are also welcome.
-
 ## License
 
-Copyright © 2016–present Stack Builders
+MIT, see [the LICENSE file](LICENSE).
 
-Distributed under BSD 3 clause license.
+## Contributing
+
+Do you want to contribute to this project? Please take a look at our [contributing guideline](/docs/CONTRIBUTING.md) to know how you can help us build it.
+
+---
+<img src="https://www.stackbuilders.com/media/images/Sb-supports.original.png" alt="Stack Builders" width="50%"></img>
+[Check out our libraries](https://github.com/stackbuilders/) | [Join our team](https://www.stackbuilders.com/join-us/)
