@@ -1,3 +1,7 @@
+## Stache 2.3.3
+
+* Allow `vector-0.13`
+
 ## Stache 2.3.2
 
 * Builds with `mtl-2.3`.
