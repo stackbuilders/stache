@@ -1,7 +1,7 @@
 cabal-version:   2.4
 name:            stache
 version:         2.3.3
-license:         BSD-3-Clause
+license:         MIT
 license-file:    LICENSE
 maintainer:      Mark Karpov <markkarpov92@gmail.com>
 author:          Mark Karpov <markkarpov92@gmail.com>
@@ -19,6 +19,8 @@ data-files:
 
 extra-doc-files:
     CHANGELOG.md
+    CODE_OF_CONDUCT.md
+    CONTRIBUITING.md
     README.md
 
 source-repository head
