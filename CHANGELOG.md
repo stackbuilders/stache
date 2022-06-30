@@ -1,6 +1,7 @@
 ## Stache 2.3.3
 
 * Allow `vector-0.13`
+* Changing license from BSD-3 to MIT
 
 ## Stache 2.3.2
 
