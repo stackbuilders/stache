@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -66,12 +65,7 @@ instance Semigroup Template where
 -- | @since 2.1.0
 instance TH.Lift Template where
   lift = liftData
-
-#if MIN_VERSION_template_haskell(2,17,0)
   liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
-#elif MIN_VERSION_template_haskell(2,16,0)
-  liftTyped = TH.unsafeTExpCoerce . TH.lift
-#endif
 
 -- | A structural element of a template.
 data Node
@@ -92,12 +86,7 @@ data Node
 -- | @since 2.1.0
 instance TH.Lift Node where
   lift = liftData
-
-#if MIN_VERSION_template_haskell(2,17,0)
   liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
-#elif MIN_VERSION_template_haskell(2,16,0)
-  liftTyped = TH.unsafeTExpCoerce . TH.lift
-#endif
 
 -- | Identifier for values to interpolate.
 --
@@ -114,12 +103,7 @@ instance NFData Key
 -- | @since 2.1.0
 instance TH.Lift Key where
   lift = liftData
-
-#if MIN_VERSION_template_haskell(2,17,0)
   liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
-#elif MIN_VERSION_template_haskell(2,16,0)
-  liftTyped = TH.unsafeTExpCoerce . TH.lift
-#endif
 
 -- | Pretty-print a key. This is helpful, for example, if you want to
 -- display an error message.
@@ -142,12 +126,7 @@ instance NFData PName
 -- | @since 2.1.0
 instance TH.Lift PName where
   lift = liftData
-
-#if MIN_VERSION_template_haskell(2,17,0)
   liftTyped = TH.Code . TH.unsafeTExpCoerce . TH.lift
-#elif MIN_VERSION_template_haskell(2,16,0)
-  liftTyped = TH.unsafeTExpCoerce . TH.lift
-#endif
 
 -- | Exception that is thrown when parsing of a template fails or referenced
 -- values are not provided.
@@ -187,20 +166,8 @@ displayMustacheWarning (MustacheDirectlyRenderedValue key) =
 ----------------------------------------------------------------------------
 -- TH lifting helpers
 
-liftData
-
-#if MIN_VERSION_template_haskell(2,17,0)
-  :: (Data a, TH.Quote m) => a -> m TH.Exp
-#else
-  :: Data a => a -> TH.Q TH.Exp
-#endif
+liftData :: (Data a, TH.Quote m) => a -> m TH.Exp
 liftData = TH.dataToExpQ (fmap liftText . cast)
 
-liftText
-
-#if MIN_VERSION_template_haskell(2,17,0)
-  :: TH.Quote m => Text -> m TH.Exp
-#else
-  :: Text -> TH.Q TH.Exp
-#endif
+liftText :: TH.Quote m => Text -> m TH.Exp
 liftText t = TH.AppE (TH.VarE 'T.pack) <$> TH.lift (T.unpack t)
