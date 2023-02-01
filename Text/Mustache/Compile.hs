@@ -134,8 +134,8 @@ compileMustacheFile path = liftIO $ do
     pname = pathToPName path
     compile = fmap (Template pname . M.singleton pname) . parseMustache path
 
--- | Compile a Mustache template from a lazy 'Text' value. The cache will
--- contain only this template named according to given 'PName'.
+-- | Compile a Mustache template from a 'Text' value. The cache will contain
+-- only this template named according to given 'PName'.
 compileMustacheText ::
   -- | How to name the template?
   PName ->
