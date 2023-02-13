@@ -50,7 +50,7 @@ import Text.Mustache.Type
 --
 -- > compileMustacheDir = complieMustacheDir' isMustacheFile
 compileMustacheDir ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Which template to select after compiling
   PName ->
   -- | Directory with templates
@@ -64,7 +64,7 @@ compileMustacheDir = compileMustacheDir' isMustacheFile
 --
 -- @since 1.2.0
 compileMustacheDir' ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Template selection predicate
   (FilePath -> Bool) ->
   -- | Which template to select after compiling
@@ -87,7 +87,7 @@ compileMustacheDir' predicate pname path =
 --
 -- @since 0.2.2
 getMustacheFilesInDir ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Directory with templates
   FilePath ->
   m [FilePath]
@@ -98,7 +98,7 @@ getMustacheFilesInDir = getMustacheFilesInDir' isMustacheFile
 --
 -- @since 1.2.0
 getMustacheFilesInDir' ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Mustache file selection predicate
   (FilePath -> Bool) ->
   -- | Directory with templates
@@ -123,7 +123,7 @@ isMustacheFile path = F.takeExtension path == ".mustache"
 -- The action can throw 'MustacheParserException' and the same exceptions as
 -- 'T.readFile'.
 compileMustacheFile ::
-  MonadIO m =>
+  (MonadIO m) =>
   -- | Location of the file
   FilePath ->
   m Template

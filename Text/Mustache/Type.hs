@@ -169,5 +169,5 @@ displayMustacheWarning (MustacheDirectlyRenderedValue key) =
 liftData :: (Data a, TH.Quote m) => a -> m TH.Exp
 liftData = TH.dataToExpQ (fmap liftText . cast)
 
-liftText :: TH.Quote m => Text -> m TH.Exp
+liftText :: (TH.Quote m) => Text -> m TH.Exp
 liftText t = TH.AppE (TH.VarE 'T.pack) <$> TH.lift (T.unpack t)
