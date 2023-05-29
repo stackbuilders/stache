@@ -57,14 +57,19 @@ pMustache = fmap catMaybes . manyTill (choice alts)
         Just <$> pUnescapedVariable,
         Just <$> pUnescapedSpecial,
         Just <$> pEscapedVariable,
-        Just <$> pTextBlock
+        Just <$> pTextBlock,
+        Just <$> pEmptyLnTextBlock
       ]
 {-# INLINE pMustache #-}
+
+pEmptyLnTextBlock :: Parser Node
+pEmptyLnTextBlock = TextBlock <$> eol'
+{-# INLINE pEmptyLnTextBlock #-}
 
 pTextBlock :: Parser Node
 pTextBlock = do
   start <- gets openingDel
-  txt <- fmap T.concat . many $ do
+  txt <- fmap T.concat . some $ do
     (void . notFollowedBy . string) start
     let textChar x = x /= T.head start && x /= '\n'
     string (T.take 1 start) <|> takeWhile1P (Just "text char") textChar

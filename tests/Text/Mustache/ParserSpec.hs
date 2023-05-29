@@ -98,3 +98,5 @@ spec = describe "parseMustache" $ do
     it "rejects il-formed expressions" $ do
       let s = "{{ foo..bar }}"
       p s `shouldFailWith` err 7 (utoks "." <> elabel keyConstErr)
+    it "rejects unclosed sections" $
+      p `shouldFailOn` "{{#foo}} bar "
