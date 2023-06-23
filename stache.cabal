@@ -1,6 +1,6 @@
 cabal-version:   2.4
 name:            stache
-version:         2.3.3
+version:         2.3.4
 license:         MIT
 license-file:    LICENSE
 maintainer:      Mark Karpov <markkarpov92@gmail.com>
