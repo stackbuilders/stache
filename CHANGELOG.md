@@ -1,6 +1,6 @@
 ## Stache 2.3.4
-* Support GHC 9.6
-* Fix infinite loop caused by unclosed sections
+* Support GHC 9.6 thanks to @ysangkok
+* Fix infinite loop caused by unclosed sections thanks to @ernius
 
 ## Stache 2.3.3
 
