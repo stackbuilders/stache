@@ -22,19 +22,19 @@ import Control.Monad (forM_, unless, when)
 import Control.Monad.Reader (MonadReader (local), ReaderT (runReaderT), asks)
 import Control.Monad.State.Strict (State, execState, modify')
 import Data.Aeson hiding (Key)
-import qualified Data.Aeson.Key as Aeson.Key
-import qualified Data.Aeson.KeyMap as Aeson.KeyMap
+import Data.Aeson.Key qualified as Aeson.Key
+import Data.Aeson.KeyMap qualified as Aeson.KeyMap
 import Data.Foldable (asum)
 import Data.List (tails)
 import Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.List.NonEmpty as NE
-import qualified Data.Map as M
+import Data.List.NonEmpty qualified as NE
+import Data.Map qualified as M
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
-import qualified Data.Text.Lazy.Builder as B
-import qualified Data.Text.Lazy.Encoding as TL
-import qualified Data.Vector as V
+import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
+import Data.Text.Lazy.Builder qualified as B
+import Data.Text.Lazy.Encoding qualified as TL
+import Data.Vector qualified as V
 import Text.Megaparsec.Pos (Pos, mkPos, unPos)
 import Text.Mustache.Type
 

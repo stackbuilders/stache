@@ -7,7 +7,7 @@ import Control.DeepSeq
 import Criterion.Main
 import Data.Aeson
 import Data.Text (Text)
-import qualified Data.Text.IO as T
+import Data.Text.IO qualified as T
 import Text.Megaparsec
 import Text.Mustache.Compile
 import Text.Mustache.Parser

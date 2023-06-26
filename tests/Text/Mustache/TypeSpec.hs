@@ -6,7 +6,7 @@ module Text.Mustache.TypeSpec
   )
 where
 
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Test.Hspec
 import Text.Mustache.Type
 

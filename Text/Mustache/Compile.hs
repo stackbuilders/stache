@@ -24,13 +24,13 @@ where
 import Control.Exception
 import Control.Monad (filterM, foldM)
 import Control.Monad.IO.Class (MonadIO (..))
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.IO as T
+import Data.Text qualified as T
+import Data.Text.IO qualified as T
 import Data.Void
 import System.Directory
-import qualified System.FilePath as F
+import System.FilePath qualified as F
 import Text.Megaparsec
 import Text.Mustache.Parser
 import Text.Mustache.Type
