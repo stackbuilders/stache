@@ -8,9 +8,9 @@ module Text.Mustache.Compile.THSpec
   )
 where
 
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Test.Hspec
-import qualified Text.Mustache.Compile.TH as TH
+import Text.Mustache.Compile.TH qualified as TH
 import Text.Mustache.Type
 
 main :: IO ()

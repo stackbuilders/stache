@@ -9,10 +9,10 @@ import Data.Aeson
 import Data.ByteString (ByteString)
 import Data.FileEmbed (embedFile)
 import Data.Map (Map, (!))
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as TL
+import Data.Text qualified as T
+import Data.Text.Lazy qualified as TL
 import Data.Yaml
 import Test.Hspec
 import Text.Megaparsec

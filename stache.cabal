@@ -41,7 +41,7 @@ library
         Text.Mustache.Render
         Text.Mustache.Type
 
-    default-language: Haskell2010
+    default-language: GHC2021
     build-depends:
         aeson >=2 && <3,
         base >=4.15 && <5.0,
@@ -72,7 +72,7 @@ executable stache
     hs-source-dirs:   app
     other-modules:    Paths_stache
     autogen-modules:  Paths_stache
-    default-language: Haskell2010
+    default-language: GHC2021
     build-depends:
         aeson >=2 && <3,
         base >=4.15 && <5.0,
@@ -102,7 +102,7 @@ test-suite tests
         Text.Mustache.RenderSpec
         Text.Mustache.TypeSpec
 
-    default-language:   Haskell2010
+    default-language:   GHC2021
     build-depends:
         aeson >=2 && <3,
         base >=4.15 && <5.0,
@@ -124,7 +124,7 @@ test-suite mustache-spec
     type:             exitcode-stdio-1.0
     main-is:          Spec.hs
     hs-source-dirs:   mustache-spec
-    default-language: Haskell2010
+    default-language: GHC2021
     build-depends:
         aeson >=2 && <3,
         base >=4.15 && <5.0,
@@ -147,7 +147,7 @@ benchmark bench
     type:             exitcode-stdio-1.0
     main-is:          Main.hs
     hs-source-dirs:   bench
-    default-language: Haskell2010
+    default-language: GHC2021
     build-depends:
         aeson >=2 && <3,
         base >=4.15 && <5.0,

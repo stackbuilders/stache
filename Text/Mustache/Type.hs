@@ -32,14 +32,14 @@ import Control.DeepSeq
 import Control.Exception (Exception (..))
 import Data.Data (Data)
 import Data.Map (Map)
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Data.String (IsString (..))
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Data.Typeable (Typeable, cast)
 import Data.Void
 import GHC.Generics
-import qualified Language.Haskell.TH.Syntax as TH
+import Language.Haskell.TH.Syntax qualified as TH
 import Text.Megaparsec
 
 -- | Mustache template as the name of the “top-level” template and a

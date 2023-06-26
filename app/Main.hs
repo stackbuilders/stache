@@ -4,15 +4,15 @@
 module Main (main) where
 
 import Data.Aeson (Value (..))
-import qualified Data.Aeson as Aeson
-import qualified Data.Aeson.KeyMap as Aeson.KeyMap
+import Data.Aeson qualified as Aeson
+import Data.Aeson.KeyMap qualified as Aeson.KeyMap
 import Data.List (foldl')
 import Data.List.NonEmpty (NonEmpty (..))
-import qualified Data.List.NonEmpty as NE
+import Data.List.NonEmpty qualified as NE
 import Data.Semigroup (sconcat)
-import qualified Data.Text.Lazy.IO as T
+import Data.Text.Lazy.IO qualified as T
 import Data.Version (showVersion)
-import qualified Data.Yaml as Yaml
+import Data.Yaml qualified as Yaml
 import Development.GitRev
 import Options.Applicative
 import Paths_stache (version)

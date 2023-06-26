@@ -25,12 +25,12 @@ where
 
 import Control.Exception
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
 import Language.Haskell.TH hiding (Dec)
 import Language.Haskell.TH.Quote (QuasiQuoter (..))
 import Language.Haskell.TH.Syntax (addDependentFile, lift)
 import System.Directory
-import qualified Text.Mustache.Compile as C
+import Text.Mustache.Compile qualified as C
 import Text.Mustache.Type
 
 -- | Compile all templates in the specified directory and select one.

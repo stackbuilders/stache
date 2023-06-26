@@ -7,7 +7,7 @@ module Text.Mustache.RenderSpec
 where
 
 import Data.Aeson (KeyValue (..), Value (..), object)
-import qualified Data.Map as M
+import Data.Map qualified as M
 import Data.Text (Text)
 import Test.Hspec
 import Text.Megaparsec
