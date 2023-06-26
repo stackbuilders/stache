@@ -45,7 +45,6 @@ library
     build-depends:
         aeson >=2 && <3,
         base >=4.15 && <5.0,
-        bytestring >=0.10 && <0.12,
         containers >=0.5 && <0.7,
         deepseq >=1.4 && <1.5,
         directory >=1.2 && <1.4,
@@ -57,15 +56,12 @@ library
         vector >=0.11 && <0.14
 
     if flag(dev)
-        ghc-options: -O0 -Wall -Werror -fsimpl-tick-factor=150
+        ghc-options:
+            -Wall -Werror -Wredundant-constraints -Wpartial-fields
+            -Wunused-packages
 
     else
-        ghc-options: -O2 -Wall -fsimpl-tick-factor=150
-
-    if flag(dev)
-        ghc-options:
-            -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns
-            -Wnoncanonical-monad-instances
+        ghc-options: -O2 -Wall
 
 executable stache
     main-is:          Main.hs
@@ -85,8 +81,8 @@ executable stache
 
     if flag(dev)
         ghc-options:
-            -Wall -Werror -Wcompat -Wincomplete-record-updates
-            -Wincomplete-uni-patterns -Wnoncanonical-monad-instances
+            -Wall -Werror -Wredundant-constraints -Wpartial-fields
+            -Wunused-packages
 
     else
         ghc-options: -O2 -Wall
@@ -111,11 +107,12 @@ test-suite tests
         hspec-megaparsec >=2.0 && <3.0,
         megaparsec >=7.0 && <10.0,
         stache,
-        template-haskell >=2.11 && <2.21,
         text >=1.2 && <2.1
 
     if flag(dev)
-        ghc-options: -O0 -Wall -Werror
+        ghc-options:
+            -Wall -Werror -Wredundant-constraints -Wpartial-fields
+            -Wunused-packages
 
     else
         ghc-options: -O2 -Wall
@@ -138,7 +135,9 @@ test-suite mustache-spec
         yaml >=0.8 && <0.12
 
     if flag(dev)
-        ghc-options: -Wall -Werror
+        ghc-options:
+            -Wall -Werror -Wredundant-constraints -Wpartial-fields
+            -Wunused-packages
 
     else
         ghc-options: -O2 -Wall
@@ -158,7 +157,9 @@ benchmark bench
         text >=1.2 && <2.1
 
     if flag(dev)
-        ghc-options: -O2 -Wall -Werror
+        ghc-options:
+            -Wall -Werror -Wredundant-constraints -Wpartial-fields
+            -Wunused-packages
 
     else
         ghc-options: -O2 -Wall
