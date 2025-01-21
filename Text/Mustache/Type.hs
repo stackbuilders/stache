@@ -36,7 +36,7 @@ import Data.Map qualified as M
 import Data.String (IsString (..))
 import Data.Text (Text)
 import Data.Text qualified as T
-import Data.Typeable (Typeable, cast)
+import Data.Typeable (cast)
 import Data.Void
 import GHC.Generics
 import Language.Haskell.TH.Syntax qualified as TH
@@ -57,7 +57,7 @@ data Template = Template
     -- “focus” can be switched easily by modifying 'templateActual'.
     templateCache :: Map PName [Node]
   }
-  deriving (Eq, Ord, Show, Data, Typeable, Generic)
+  deriving (Eq, Ord, Show, Data, Generic)
 
 instance Semigroup Template where
   (Template pname x) <> (Template _ y) = Template pname (M.union x y)
@@ -81,7 +81,7 @@ data Node
     InvertedSection Key [Node]
   | -- | Partial with indentation level ('Nothing' means it was inlined)
     Partial PName (Maybe Pos)
-  deriving (Eq, Ord, Show, Data, Typeable, Generic)
+  deriving (Eq, Ord, Show, Data, Generic)
 
 -- | @since 2.1.0
 instance TH.Lift Node where
@@ -96,7 +96,7 @@ instance TH.Lift Node where
 --     * @[text]@—single key is a normal identifier;
 --     * @[text1, text2]@—multiple keys represent dotted names.
 newtype Key = Key {unKey :: [Text]}
-  deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Typeable, Generic)
+  deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Generic)
 
 instance NFData Key
 
@@ -116,7 +116,7 @@ showKey (Key xs) = T.intercalate "." xs
 -- | Identifier for partials. Note that with the @OverloadedStrings@
 -- extension you can use just string literals to create values of this type.
 newtype PName = PName {unPName :: Text}
-  deriving (Eq, Ord, Show, Data, Typeable, Generic)
+  deriving (Eq, Ord, Show, Data, Generic)
 
 instance IsString PName where
   fromString = PName . T.pack
@@ -137,7 +137,7 @@ newtype MustacheException
     --
     -- /The 'Text' field was added in version 1.0.0./
     MustacheParserException (ParseErrorBundle Text Void)
-  deriving (Eq, Show, Typeable, Generic)
+  deriving (Eq, Show, Generic)
 
 instance Exception MustacheException where
   displayException (MustacheParserException b) = errorBundlePretty b
@@ -152,7 +152,7 @@ data MustacheWarning
   | -- | A complex value such as an 'Object' or 'Array' was directly
     -- rendered into the template.
     MustacheDirectlyRenderedValue Key
-  deriving (Eq, Show, Typeable, Generic)
+  deriving (Eq, Show, Generic)
 
 -- | Pretty-print a 'MustacheWarning'.
 --
