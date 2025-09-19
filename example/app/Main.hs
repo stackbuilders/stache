@@ -4,12 +4,14 @@ module Main (main) where
 
 import Data.Aeson
 import Data.Text
-import Text.Mustache
 import qualified Data.Text.Lazy.IO as TIO
+import Text.Mustache
 
 main :: IO ()
 main = do
   template <- compileMustacheDir "main" "templates"
-  TIO.putStr $ renderMustache template $ object
-      [ "subnets" .= ["pen" :: Text, "candle", "egg"]
-      ]
+  TIO.putStr $
+    renderMustache template $
+      object
+        [ "subnets" .= ["pen" :: Text, "candle", "egg"]
+        ]
