@@ -229,6 +229,6 @@ eol' :: Parser Text
 eol' = do
   x <- eol
   o <- getOffset
-  modify' (\st -> st {newlineOffset = o})
+  modify' (\st -> st{newlineOffset = o})
   return x
 {-# INLINE eol' #-}

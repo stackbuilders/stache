@@ -23,7 +23,7 @@ import Text.Mustache
 
 main :: IO ()
 main = do
-  Opts {..} <- execParser optsParserInfo
+  Opts{..} <- execParser optsParserInfo
   template <-
     sconcat
       <$> mapM (compileMustacheDir optTarget) optTemplateDirs

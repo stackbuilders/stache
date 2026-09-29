@@ -95,7 +95,7 @@ instance TH.Lift Node where
 --     * @[]@—empty list means implicit iterators;
 --     * @[text]@—single key is a normal identifier;
 --     * @[text1, text2]@—multiple keys represent dotted names.
-newtype Key = Key {unKey :: [Text]}
+newtype Key = Key{unKey :: [Text]}
   deriving (Eq, Ord, Show, Semigroup, Monoid, Data, Generic)
 
 instance NFData Key
@@ -115,7 +115,7 @@ showKey (Key xs) = T.intercalate "." xs
 
 -- | Identifier for partials. Note that with the @OverloadedStrings@
 -- extension you can use just string literals to create values of this type.
-newtype PName = PName {unPName :: Text}
+newtype PName = PName{unPName :: Text}
   deriving (Eq, Ord, Show, Data, Generic)
 
 instance IsString PName where

@@ -77,7 +77,7 @@ compileMustacheDir' predicate pname path =
   getMustacheFilesInDir' predicate path
     >>= fmap selectKey . foldM f (Template undefined M.empty)
   where
-    selectKey t = t {templateActual = pname}
+    selectKey t = t{templateActual = pname}
     f (Template _ old) fp = do
       Template _ new <- compileMustacheFile fp
       return (Template undefined (M.union new old))

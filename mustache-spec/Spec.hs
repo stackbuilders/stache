@@ -31,7 +31,7 @@ instance FromJSON SpecFile where
   parseJSON = withObject "Mustache spec file" $ \o -> do
     specOverview <- o .: "overview"
     specTests <- o .: "tests"
-    return SpecFile {..}
+    return SpecFile{..}
 
 -- | Representation of a single test.
 data Test = Test
@@ -51,7 +51,7 @@ instance FromJSON Test where
     testTemplate <- o .: "template"
     testExpected <- o .: "expected"
     testPartials <- o .:? "partials" .!= M.empty
-    return Test {..}
+    return Test{..}
 
 main :: IO ()
 main = hspec spec
@@ -72,12 +72,12 @@ specData aspect bytes = describe aspect $ do
     Left err ->
       it "should load YAML specs first" $
         expectationFailure (prettyPrintParseException err)
-    Right SpecFile {..} ->
-      forM_ specTests $ \Test {..} ->
+    Right SpecFile{..} ->
+      forM_ specTests $ \Test{..} ->
         it (testName ++ ": " ++ testDesc) $
           case compileMustacheText (PName $ T.pack testName) testTemplate of
             Left perr -> handleError perr
-            Right Template {..} -> do
+            Right Template{..} -> do
               ps1 <- forM (M.keys testPartials) $ \k -> do
                 let pname = PName k
                 case parseMustache (T.unpack k) (testPartials ! k) of

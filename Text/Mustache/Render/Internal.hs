@@ -183,31 +183,31 @@ txt policy t = R $ do
 incrementIndentBy :: Pos -> R a -> R a
 incrementIndentBy n (R m) =
   R $
-    local (\rc -> rc {rcIndent = mkPos (unPos (rcIndent rc) + unPos n - 1)}) m
+    local (\rc -> rc{rcIndent = mkPos (unPos (rcIndent rc) + unPos n - 1)}) m
 
 -- | Add a value to the context stack.
 addContext :: Value -> R a -> R a
 addContext v (R m) =
   R $
-    local (\rc -> rc {rcContext = NE.cons v (rcContext rc)}) m
+    local (\rc -> rc{rcContext = NE.cons v (rcContext rc)}) m
 
 -- | Add to the key prefix.
 addPrefix :: Key -> R a -> R a
 addPrefix key (R m) =
   R $
-    local (\rc -> rc {rcPrefix = rcPrefix rc <> key}) m
+    local (\rc -> rc{rcPrefix = rcPrefix rc <> key}) m
 
 -- | Reset prefix.
 resetPrefix :: R a -> R a
 resetPrefix (R m) =
   R $
-    local (\rc -> rc {rcPrefix = mempty}) m
+    local (\rc -> rc{rcPrefix = mempty}) m
 
 -- | Add a warning to the warnings list.
 addWarning :: MustacheWarning -> R ()
 addWarning w = R $
   modify' $
-    \sc -> sc {scWarnings = scWarnings sc . (w :)}
+    \sc -> sc{scWarnings = scWarnings sc . (w :)}
 
 -- | Get the current context stack.
 getContext :: R (NonEmpty Value)
